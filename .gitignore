@@ -40,3 +40,9 @@ captures/
 # Keystore files
 *.jks
 crowdin.properties
+
+.project
+.settings/org.eclipse.buildship.core.prefs
+app/.classpath
+app/.project
+app/.settings/org.eclipse.buildship.core.prefs
