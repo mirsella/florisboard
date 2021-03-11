@@ -27,22 +27,28 @@ enum class SwipeAction {
     DELETE_WORD,
     DELETE_WORDS_PRECISELY,
     HIDE_KEYBOARD,
+    INSERT_SPACE,
     MOVE_CURSOR_UP,
     MOVE_CURSOR_DOWN,
     MOVE_CURSOR_LEFT,
     MOVE_CURSOR_RIGHT,
+    MOVE_CURSOR_START_OF_LINE,
+    MOVE_CURSOR_END_OF_LINE,
+    MOVE_CURSOR_START_OF_PAGE,
+    MOVE_CURSOR_END_OF_PAGE,
     SHIFT,
+    SHOW_INPUT_METHOD_PICKER,
     SWITCH_TO_PREV_SUBTYPE,
     SWITCH_TO_NEXT_SUBTYPE,
     SWITCH_TO_PREV_KEYBOARD;
 
     companion object {
         fun fromString(string: String): SwipeAction {
-            return valueOf(string.toUpperCase(Locale.ROOT))
+            return valueOf(string.toUpperCase(Locale.ENGLISH))
         }
     }
 
     override fun toString(): String {
-        return super.toString().toLowerCase(Locale.ROOT)
+        return super.toString().toLowerCase(Locale.ENGLISH)
     }
 }

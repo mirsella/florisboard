@@ -31,6 +31,10 @@ import dev.patrickgold.florisboard.R
 import dev.patrickgold.florisboard.ime.core.FlorisBoard
 import dev.patrickgold.florisboard.ime.core.PrefHelper
 import dev.patrickgold.florisboard.ime.text.key.KeyHintMode
+import dev.patrickgold.florisboard.ime.theme.Theme
+import dev.patrickgold.florisboard.ime.theme.ThemeManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 
 /**
  * View class for managing the rendering and the events of a single emoji keyboard key.
@@ -44,8 +48,8 @@ import dev.patrickgold.florisboard.ime.text.key.KeyHintMode
 class EmojiKeyView(
     private val emojiKeyboardView: EmojiKeyboardView,
     val data: EmojiKeyData
-) : androidx.appcompat.widget.AppCompatTextView(emojiKeyboardView.context),
-    FlorisBoard.EventListener {
+) : androidx.appcompat.widget.AppCompatTextView(emojiKeyboardView.context), CoroutineScope by MainScope(),
+    FlorisBoard.EventListener, ThemeManager.OnThemeUpdatedListener {
     private val florisboard: FlorisBoard? = FlorisBoard.getInstanceOrNull()
     private val prefs: PrefHelper = PrefHelper.getDefaultInstance(context)
 
@@ -62,13 +66,16 @@ class EmojiKeyView(
         triangleDrawable = ContextCompat.getDrawable(context, R.drawable.triangle_bottom_right)
 
         text = data.getCodePointsAsString()
-
-        florisboard?.addEventListener(this)
     }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        onApplyThemeAttributes()
+        florisboard?.addEventListener(this)
+    }
+
+    override fun onDetachedFromWindow() {
+        florisboard?.removeEventListener(this)
+        super.onDetachedFromWindow()
     }
 
     /**
@@ -147,10 +154,10 @@ class EmojiKeyView(
         )
     }
 
-    override fun onApplyThemeAttributes() {
+    override fun onThemeUpdated(theme: Theme) {
         triangleDrawable?.colorFilter =
             BlendModeColorFilterCompat.createBlendModeColorFilterCompat(
-                prefs.theme.mediaFgColorAlt, BlendModeCompat.SRC_ATOP
+                theme.getAttr(Theme.Attr.MEDIA_FOREGROUND_ALT).toSolidColor().color, BlendModeCompat.SRC_ATOP
             )
     }
 

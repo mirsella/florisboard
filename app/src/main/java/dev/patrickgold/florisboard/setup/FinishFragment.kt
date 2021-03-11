@@ -22,7 +22,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import dev.patrickgold.florisboard.databinding.SetupFragmentFinishBinding
-import dev.patrickgold.florisboard.ime.theme.Theme
 
 class FinishFragment : Fragment() {
     private lateinit var binding: SetupFragmentFinishBinding
@@ -35,10 +34,10 @@ class FinishFragment : Fragment() {
         binding = SetupFragmentFinishBinding.inflate(inflater, container, false)
 
         // Set theme to floris_day
-        Theme.writeThemeToPrefs(
+        /*Theme.writeThemeToPrefs(
             (activity as SetupActivity).prefs,
             Theme.fromJsonFile(requireContext(), "ime/theme/floris_day.json")!!
-        )
+        )*/
 
         return binding.root
     }

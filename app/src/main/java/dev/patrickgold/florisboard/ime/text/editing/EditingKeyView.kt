@@ -30,22 +30,42 @@ import android.widget.Button
 import androidx.appcompat.widget.AppCompatImageButton
 import dev.patrickgold.florisboard.R
 import dev.patrickgold.florisboard.ime.core.FlorisBoard
+import dev.patrickgold.florisboard.ime.core.InputKeyEvent
 import dev.patrickgold.florisboard.ime.core.PrefHelper
 import dev.patrickgold.florisboard.ime.text.key.KeyCode
 import dev.patrickgold.florisboard.ime.text.key.KeyData
+import dev.patrickgold.florisboard.ime.theme.Theme
+import dev.patrickgold.florisboard.ime.theme.ThemeManager
+import dev.patrickgold.florisboard.ime.theme.ThemeValue
 import dev.patrickgold.florisboard.util.cancelAll
 import dev.patrickgold.florisboard.util.postAtScheduledRate
 
 /**
  * View class for managing and rendering an editing key.
  */
-class EditingKeyView : AppCompatImageButton {
+class EditingKeyView : AppCompatImageButton, ThemeManager.OnThemeUpdatedListener {
     private val florisboard: FlorisBoard? = FlorisBoard.getInstanceOrNull()
     private val prefs: PrefHelper = PrefHelper.getDefaultInstance(context)
-    private val data: KeyData
+    private val themeManager: ThemeManager = ThemeManager.default()
+    private val data: KeyData = when (id) {
+        R.id.arrow_down -> KeyData.ARROW_DOWN
+        R.id.arrow_left -> KeyData.ARROW_LEFT
+        R.id.arrow_right -> KeyData.ARROW_RIGHT
+        R.id.arrow_up -> KeyData.ARROW_UP
+        R.id.backspace -> KeyData.DELETE
+        R.id.clipboard_copy -> KeyData.CLIPBOARD_COPY
+        R.id.clipboard_cut -> KeyData.CLIPBOARD_CUT
+        R.id.clipboard_paste -> KeyData.CLIPBOARD_PASTE
+        R.id.move_start_of_line -> KeyData.MOVE_START_OF_LINE
+        R.id.move_end_of_line -> KeyData.MOVE_END_OF_LINE
+        R.id.select -> KeyData.CLIPBOARD_SELECT
+        R.id.select_all -> KeyData.CLIPBOARD_SELECT_ALL
+        else -> KeyData.UNSPECIFIED
+    }
     private var isKeyPressed: Boolean = false
     private val repeatedKeyPressHandler: Handler = Handler(context.mainLooper)
 
+    private val defaultTextSize: Float = Button(context).textSize
     private var label: String? = null
     private var labelPaint: Paint = Paint().apply {
         alpha = 255
@@ -53,9 +73,13 @@ class EditingKeyView : AppCompatImageButton {
         isAntiAlias = true
         isFakeBoldText = false
         textAlign = Paint.Align.CENTER
-        textSize = Button(context).textSize
+        textSize = defaultTextSize
         typeface = Typeface.DEFAULT
     }
+
+    private var colorHighlightedEnabled: ThemeValue = ThemeValue.SolidColor(0)
+    private var colorEnabled: ThemeValue = ThemeValue.SolidColor(0)
+    private var colorDefault: ThemeValue = ThemeValue.SolidColor(0)
 
     var isHighlighted: Boolean = false
         set(value) { field = value; invalidate() }
@@ -63,26 +87,20 @@ class EditingKeyView : AppCompatImageButton {
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, R.style.TextEditingButton)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        val code = when (id) {
-            R.id.arrow_down -> KeyCode.ARROW_DOWN
-            R.id.arrow_left -> KeyCode.ARROW_LEFT
-            R.id.arrow_right -> KeyCode.ARROW_RIGHT
-            R.id.arrow_up -> KeyCode.ARROW_UP
-            R.id.backspace -> KeyCode.DELETE
-            R.id.clipboard_copy -> KeyCode.CLIPBOARD_COPY
-            R.id.clipboard_cut -> KeyCode.CLIPBOARD_CUT
-            R.id.clipboard_paste -> KeyCode.CLIPBOARD_PASTE
-            R.id.move_home -> KeyCode.MOVE_HOME
-            R.id.move_end -> KeyCode.MOVE_END
-            R.id.select -> KeyCode.CLIPBOARD_SELECT
-            R.id.select_all -> KeyCode.CLIPBOARD_SELECT_ALL
-            else -> 0
-        }
-        data = KeyData(code = code)
         context.obtainStyledAttributes(attrs, R.styleable.EditingKeyView).apply {
             label = getString(R.styleable.EditingKeyView_android_text)
             recycle()
         }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        themeManager.registerOnThemeUpdatedListener(this)
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        themeManager.unregisterOnThemeUpdatedListener(this)
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -105,7 +123,7 @@ class EditingKeyView : AppCompatImageButton {
                         val delayMillis = prefs.keyboard.longPressDelay.toLong()
                         repeatedKeyPressHandler.postAtScheduledRate(delayMillis, 25) {
                             if (isKeyPressed) {
-                                florisboard?.textInputManager?.sendKeyPress(data)
+                                florisboard?.textInputManager?.inputEventDispatcher?.send(InputKeyEvent.downUp(data))
                             } else {
                                 repeatedKeyPressHandler.cancelAll()
                             }
@@ -117,12 +135,22 @@ class EditingKeyView : AppCompatImageButton {
                 isKeyPressed = false
                 repeatedKeyPressHandler.cancelAll()
                 if (event.actionMasked != MotionEvent.ACTION_CANCEL) {
-                    florisboard?.textInputManager?.sendKeyPress(data)
+                    florisboard?.textInputManager?.inputEventDispatcher?.send(InputKeyEvent.downUp(data))
                 }
             }
             else -> return false
         }
         return true
+    }
+
+    override fun onThemeUpdated(theme: Theme) {
+        imageTintList = ColorStateList.valueOf(when {
+            isEnabled -> theme.getAttr(Theme.Attr.SMARTBAR_FOREGROUND).toSolidColor().color
+            else -> theme.getAttr(Theme.Attr.SMARTBAR_FOREGROUND_ALT).toSolidColor().color
+        })
+        colorHighlightedEnabled = theme.getAttr(Theme.Attr.WINDOW_COLOR_PRIMARY)
+        colorEnabled = theme.getAttr(Theme.Attr.SMARTBAR_FOREGROUND_ALT)
+        colorDefault = theme.getAttr(Theme.Attr.SMARTBAR_FOREGROUND)
     }
 
     /**
@@ -133,25 +161,22 @@ class EditingKeyView : AppCompatImageButton {
 
         canvas ?: return
 
-        imageTintList = ColorStateList.valueOf(when {
-            isEnabled -> prefs.theme.smartbarFgColor
-            else -> prefs.theme.smartbarFgColorAlt
-        })
-
         // Draw label
         val label = label
         if (label != null) {
             labelPaint.color = if (isHighlighted && isEnabled) {
-                prefs.theme.colorPrimary
+                colorHighlightedEnabled.toSolidColor().color
             } else if (!isEnabled) {
-                prefs.theme.smartbarFgColorAlt
+                colorEnabled.toSolidColor().color
             } else {
-                prefs.theme.smartbarFgColor
+                colorDefault.toSolidColor().color
             }
             val isPortrait =
                 resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-            if (!isPortrait) {
-                labelPaint.textSize *= 0.9f
+            labelPaint.textSize = if (isPortrait) {
+                defaultTextSize
+            } else {
+                defaultTextSize * 0.9f
             }
             val centerX = measuredWidth / 2.0f
             val centerY = measuredHeight / 2.0f + (labelPaint.textSize - labelPaint.descent()) / 2

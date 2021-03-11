@@ -40,15 +40,17 @@ object KeyCode {
     const val ARROW_RIGHT =                  -21
     const val ARROW_UP =                     -22
     const val ARROW_DOWN =                   -23
-    const val MOVE_HOME =                    -24
-    const val MOVE_END =                     -25
+    const val MOVE_START_OF_PAGE =           -24
+    const val MOVE_END_OF_PAGE =             -25
+    const val MOVE_START_OF_LINE =           -26
+    const val MOVE_END_OF_LINE =             -27
 
     const val SETTINGS =                    -100
     const val CANCEL =                        -3
     const val CLEAR_INPUT =                  -13
     const val VOICE_INPUT =                   -4
 
-    const val DISABLED =                       0
+    const val UNSPECIFIED =                    0
 
     const val SPLIT_LAYOUT =                -110
     const val MERGE_LAYOUT =                -111
@@ -83,8 +85,11 @@ object KeyCode {
     const val SWITCH_TO_TEXT_CONTEXT =      -212
     const val SWITCH_TO_MEDIA_CONTEXT =     -213
     const val SWITCH_TO_CLIPBOARD_CONTEXT = -214
-    const val TOGGLE_ONE_HANDED_MODE =      -215
+    const val TOGGLE_ONE_HANDED_MODE_LEFT = -215
+    const val TOGGLE_ONE_HANDED_MODE_RIGHT =-216
     const val URI_COMPONENT_TLD =           -255
+
+    const val INTERNAL_BATCH_EDIT =         -901
 
     const val KESHIDA =                     1600
     const val HALF_SPACE =                  8204

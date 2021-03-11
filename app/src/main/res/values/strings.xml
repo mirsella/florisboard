@@ -1,4 +1,6 @@
 <resources>
+    <string name="app_name">FlorisBoard</string>
+
     <string name="key__phone_pause" comment="Label for the Pause key in the telephone keyboard layout">Pause</string>
     <string name="key__phone_wait" comment="Label for the Wait key in the telephone keyboard layout">Wait</string>
     <string name="key_popup__threedots_alt" comment="Content description for the three-dots icon in a key popup">Three-dot icon. If visible, indicates that more letters can be used if longer pressed.</string>
@@ -47,6 +49,7 @@
     <string name="settings__menu_about" translatable="false" comment="Three-dot menu entry for About activity">@string/about__title</string>
     <string name="settings__menu_advanced" translatable="false" comment="Three-dot menu entry for Advanced activity">@string/settings__advanced__title</string>
     <string name="settings__menu_help" comment="Three-dot menu entry for Help and Feedback web link">Help &amp; feedback</string>
+    <string name="settings__help" comment="General label for help buttons in Settings">Help</string>
     <string name="settings__navigation__home" comment="Long-press hint of bottom nav item Home in Settings">Home</string>
     <string name="settings__navigation__keyboard" comment="Long-press hint of bottom nav item Keyboard in Settings">Keyboard</string>
     <string name="settings__navigation__typing" comment="Long-press hint of bottom nav item Typing in Settings">Typing</string>
@@ -74,42 +77,84 @@
 
     <string name="settings__theme__title" comment="Title of the Theme fragment">Keyboard theme</string>
     <string name="settings__theme__undefined" comment="General string for an undefined preference value">Undefined</string>
-    <string name="settings__theme__preset_title" comment="Label of the theme preset preference">Theme</string>
-    <string name="settings__theme__preset_summary" comment="Summary of the theme preset preference">Custom (based on %s)</string>
-    <string name="settings__theme__preset_dialog_selected_theme" comment="Label of the selected themes list">Selected theme:</string>
-    <string name="settings__theme__preset_dialog_available_themes" comment="Label of the available themes list">Available themes:</string>
-    <string name="settings__theme__preset_dialog_alt_arrow_right" comment="Content description of the theme selection button in theme dialog">Arrow right</string>
-    <string name="settings__theme__background" comment="General label for a background preference">Background color</string>
-    <string name="settings__theme__background_active" comment="General label for an active background preference">Background color when active</string>
-    <string name="settings__theme__background_pressed" comment="General label for a pressed background preference">Background color when pressed</string>
-    <string name="settings__theme__foreground" comment="General label for a foreground preference">Foreground color</string>
-    <string name="settings__theme__foreground_alt" comment="General label for an alternate foreground preference">Foreground color (alternative)</string>
-    <string name="settings__theme__foreground_capslock" comment="General label for a capslock foreground preference">Foreground color (caps lock)</string>
-    <string name="settings__theme__dialog_title" comment="Title of the color selection dialog for a single theme preference">Select a color</string>
-    <string name="settings__theme__group_window" comment="Theme group label">Window &amp; System</string>
-    <string name="settings__theme__group_keyboard" comment="Theme group label">Keyboard</string>
-    <string name="settings__theme__group_key" comment="Theme group label">Key</string>
-    <string name="settings__theme__group_key_enter" comment="Theme group label">Enter key</string>
-    <string name="settings__theme__group_key_popup" comment="Theme group label">Key popup</string>
-    <string name="settings__theme__group_key_shift" comment="Theme group label">Shift key</string>
-    <string name="settings__theme__group_media" comment="Theme group label">Media context</string>
-    <string name="settings__theme__group_one_handed" comment="Theme group label">One-handed</string>
-    <string name="settings__theme__group_one_handed_button" comment="Theme group label">One-handed button</string>
-    <string name="settings__theme__group_private_mode" comment="Theme group label">Private mode</string>
-    <string name="settings__theme__group_smartbar" comment="Theme group label">Smartbar</string>
-    <string name="settings__theme__group_smartbar_button" comment="Theme group label">Smartbar button</string>
-    <string name="pref__theme__colorPrimary_title" comment="Title of Color primary theme preference">Primary color</string>
-    <string name="pref__theme__colorPrimary_summary" comment="Summary of Color primary theme preference">Applied to main media tab ripple and selection highlight</string>
-    <string name="pref__theme__colorPrimaryDark_title" comment="Title of Color primary dark theme preference">Primary color (dark)</string>
-    <string name="pref__theme__colorPrimaryDark_summary" comment="Summary of Color primary dark theme preference">Currently not used, reserved for future implementation</string>
-    <string name="pref__theme__colorAccent_title" comment="Title of Color accent theme preference">Accent color</string>
-    <string name="pref__theme__colorAccent_summary" comment="Summary of Color accent theme preference">Applied to emoji tab ripple</string>
-    <string name="pref__theme__navBarColor_title" comment="Title of Nav bar color theme preference">Navigation bar color</string>
-    <string name="pref__theme__navBarColor_summary" comment="Summary of Nav bar color theme preference">The background of the navigation bar.</string>
-    <string name="pref__theme__navBarIsLight_title" comment="Title of Nav bar is light theme preference">Navigation bar dark foreground</string>
-    <string name="pref__theme__navBarIsLight_summary" comment="Summary of Nav bar is light theme preference">Set to ON for dark or to OFF for light foreground.</string>
-    <string name="pref__theme__showKeyBorder_title" comment="Title of Show Key Border preference">Key Border</string>
-    <string name="pref__theme__showKeyBorder_summary" comment="Summary of Show Key Border preference">Set to ON to show border or to OFF to hide it</string>
+    <string name="pref__theme__mode__label" comment="Label of the theme mode preference">Theme mode</string>
+    <string name="pref__theme__mode__always_day" comment="Preference value for theme mode">Always day</string>
+    <string name="pref__theme__mode__always_night" comment="Preference value for theme mode">Always night</string>
+    <string name="pref__theme__mode__follow_system" comment="Preference value for theme mode">Follow system</string>
+    <string name="pref__theme__mode__follow_time" comment="Preference value for theme mode">Follow time</string>
+    <string name="pref__theme__sunrise_time__label" comment="Label of the sunrise time preference">Sunrise time</string>
+    <string name="pref__theme__sunset_time__label" comment="Label of the sunset time preference">Sunset time</string>
+    <string name="pref__theme__day" comment="Label of the day group (day means light theme)">Day theme</string>
+    <string name="pref__theme__night" comment="Label of the night group (night means dark theme)">Night theme</string>
+    <string name="pref__theme__any_theme__label" comment="Label of the theme selector preference">Selected theme</string>
+    <string name="pref__theme__any_theme_adapt_to_app__label" comment="Label of the theme adapt to app preference">Adapt colors to app</string>
+    <string name="pref__theme__any_theme_adapt_to_app__summary" comment="Summary of the theme adapt to app preference">Theme colors adapt to those in the current app, if the target app supports this.</string>
+    <string name="pref__theme__source_assets" comment="Label for the theme source field">FlorisBoard App Assets</string>
+    <string name="pref__theme__source_internal" comment="Label for the theme source field">Internal Storage</string>
+    <string name="pref__theme__source_external" comment="Label for the theme source field">External Provider</string>
+
+    <string name="settings__theme_manager__title_day" comment="Title of the theme manager activity for day theme">Theme Manager (Day)</string>
+    <string name="settings__theme_manager__title_night" comment="Title of the theme manager activity for night theme">Theme Manager (Night)</string>
+    <string name="settings__theme_manager__create_empty" comment="Label of the Create empty FAB action">Create empty theme</string>
+    <string name="settings__theme_manager__create_from_selected" comment="Label of the Create from selected FAB action">Create from selected theme</string>
+    <string name="settings__theme_manager__theme_custom_title" comment="Title template for a custom theme">Custom (based on %s)</string>
+    <string name="settings__theme_manager__theme_new_title" comment="Title template for a new theme">New theme</string>
+
+    <string name="settings__theme_editor__title" comment="Title of the edit theme activity">Edit theme</string>
+    <string name="settings__theme_editor__name_label" comment="Label of name input">Name</string>
+    <string name="settings__theme_editor__type_label" comment="Label of type input">Type</string>
+    <string name="settings__theme_editor__add_group_dialog_title" comment="Title of the add group dialog in the theme editor">Add group</string>
+    <string name="settings__theme_editor__edit_group_dialog_title" comment="Title of the edit group dialog in the theme editor">Edit group</string>
+    <string name="settings__theme_editor__add_attr_dialog_title" comment="Title of the add attribute dialog in the theme editor">Add attribute</string>
+    <string name="settings__theme_editor__edit_attr_dialog_title" comment="Title of the edit attribute dialog in the theme editor">Edit attribute</string>
+    <string name="settings__theme_editor__value_type_reference" comment="Theme value type">Reference</string>
+    <string name="settings__theme_editor__value_type_reference_group" comment="Theme value type sub-field">Group</string>
+    <string name="settings__theme_editor__value_type_reference_attr" comment="Theme value type sub-field">Attribute</string>
+    <string name="settings__theme_editor__value_type_solid_color" comment="Theme value type">Solid color</string>
+    <string name="settings__theme_editor__value_type_lin_grad" comment="Theme value type">Linear gradient</string>
+    <string name="settings__theme_editor__value_type_rad_grad" comment="Theme value type">Radial gradient</string>
+    <string name="settings__theme_editor__value_type_on_off" comment="Theme value type">Switch</string>
+    <string name="settings__theme_editor__value_type_on_off_state" comment="Theme value type sub-field">State</string>
+    <string name="settings__theme_editor__value_type_other" comment="Theme value type">Other</string>
+    <string name="settings__theme_editor__value_type_other_text" comment="Theme value type sub-field">Text</string>
+    <string name="settings__theme_editor__value_preview_content_description" comment="Theme value preview content description">Preview of the theme value</string>
+    <string name="settings__theme_editor__error_theme_label_empty" comment="Error text for an empty theme label">Please enter a theme name.</string>
+    <string name="settings__theme_editor__error_group_name" comment="Error text for an invalid group name">Please enter a group name which only contain letters (a–z and/or A–Z), colons (:) for sub–grouping or additionally numbers (0–9), tilde (~) and underlines (_) for the key label.</string>
+    <string name="settings__theme_editor__error_group_name_empty" comment="Error text for an empty group name">Please enter a group name.</string>
+    <string name="settings__theme_editor__error_group_name_already_exists" comment="Error text for a duplicate group name">This group name already exists within this theme. Please choose another one.</string>
+    <string name="settings__theme_editor__error_attr_name" comment="Error text for an invalid attribute name">Please enter an attribute name which only contain the letters a-z and/or A-Z.</string>
+    <string name="settings__theme_editor__error_attr_name_empty" comment="Error text for an empty attribute name">Please enter an attribute name.</string>
+    <string name="settings__theme_editor__error_attr_name_already_exists" comment="Error text for a duplicate attribute name">This attribute name already exists within this group. Please specify another one.</string>
+
+    <string name="settings__theme__group_window"                comment="Theme group label">Window &amp; System</string>
+    <string name="settings__theme__group_keyboard"              comment="Theme group label">Keyboard</string>
+    <string name="settings__theme__group_key"                   comment="Theme group label">Key</string>
+    <string name="settings__theme__group_key_specific"          comment="Theme group label (%s is specific modifier)">Key (%s)</string>
+    <string name="settings__theme__group_media"                 comment="Theme group label">Media context</string>
+    <string name="settings__theme__group_oneHanded"             comment="Theme group label">One-handed</string>
+    <string name="settings__theme__group_popup"                 comment="Theme group label">Popup</string>
+    <string name="settings__theme__group_privateMode"           comment="Theme group label">Private mode</string>
+    <string name="settings__theme__group_smartbar"              comment="Theme group label">Smartbar</string>
+    <string name="settings__theme__group_smartbarButton"        comment="Theme group label">Smartbar button</string>
+    <string name="settings__theme__group_extractEditLayout"     comment="Theme group label">Landscape fullscreen layout</string>
+    <string name="settings__theme__group_extractActionButton"   comment="Theme group label">Landscape fullscreen action button</string>
+    <string name="settings__theme__group_custom"                comment="Theme group label (%s is custom group name)">Custom group (%s)</string>
+
+    <string name="settings__theme__attr_background"             comment="Theme attribute label">Background color</string>
+    <string name="settings__theme__attr_backgroundActive"       comment="Theme attribute label">Background color (active)</string>
+    <string name="settings__theme__attr_backgroundPressed"      comment="Theme attribute label">Background color (pressed)</string>
+    <string name="settings__theme__attr_foreground"             comment="Theme attribute label">Foreground color</string>
+    <string name="settings__theme__attr_foregroundAlt"          comment="Theme attribute label">Foreground color (alternative)</string>
+    <string name="settings__theme__attr_foregroundPressed"      comment="Theme attribute label">Foreground color (pressed)</string>
+    <string name="settings__theme__attr_showBorder"             comment="Theme attribute label">Show border</string>
+    <string name="settings__theme__attr_colorPrimary"           comment="Theme attribute label">Primary color</string>
+    <string name="settings__theme__attr_colorPrimaryDark"       comment="Theme attribute label">Primary color (dark)</string>
+    <string name="settings__theme__attr_colorAccent"            comment="Theme attribute label">Accent color</string>
+    <string name="settings__theme__attr_navBarColor"            comment="Theme attribute label">Navigation bar color</string>
+    <string name="settings__theme__attr_navBarLight"            comment="Theme attribute label">Navigation bar dark foreground</string>
+    <string name="settings__theme__attr_semiTransparentColor"   comment="Theme attribute label">Semi transparent color</string>
+    <string name="settings__theme__attr_textColor"              comment="Theme attribute label">Text color</string>
+    <string name="settings__theme__attr_custom"                 comment="Theme attribute label (%s is custom attribute name)">Custom attribute (%s)</string>
 
     <string name="settings__keyboard__title" comment="Title of Keyboard preferences fragment">Keyboard Preferences</string>
     <string name="pref__keyboard__group_keys__label" comment="Preference group title">Keys</string>
@@ -121,6 +166,13 @@
     <string name="pref__keyboard__hint_mode__enabled_hint_priority" comment="Preference value">Enabled (Hint is prioritized)</string>
     <string name="pref__keyboard__hint_mode__enabled_accent_priority" comment="Preference value">Enabled (Accent is prioritized)</string>
     <string name="pref__keyboard__hint_mode__enabled_smart_priority" comment="Preference value">Enabled (Smart prioritization)</string>
+    <string name="pref__keyboard__utility_key_enabled__label" comment="Preference title">Show utility key</string>
+    <string name="pref__keyboard__utility_key_enabled__summary" comment="Preference summary">Shows a configurable utility key next to space bar</string>
+    <string name="pref__keyboard__utility_key_action__label" comment="Preference title">Utility key action</string>
+    <string name="pref__keyboard__utility_key_action__switch_to_emojis" comment="Preference value">Switch to emojis</string>
+    <string name="pref__keyboard__utility_key_action__switch_language" comment="Preference value">Switch language</string>
+    <string name="pref__keyboard__utility_key_action__switch_keyboard_app" comment="Preference value">Switch keyboard app</string>
+    <string name="pref__keyboard__utility_key_action__dynamic_switch_language_emojis" comment="Preference value">Dynamic: Switch to emojis / Switch language</string>
     <string name="pref__keyboard__font_size_multiplier_portrait__label" comment="Preference title">Font size multiplier (portrait)</string>
     <string name="pref__keyboard__font_size_multiplier_landscape__label" comment="Preference title">Font size multiplier (landscape)</string>
     <string name="pref__keyboard__group_layout__label" comment="Preference group title">Layout</string>
@@ -128,6 +180,10 @@
     <string name="pref__keyboard__one_handed_mode__off" comment="Preference value">Off</string>
     <string name="pref__keyboard__one_handed_mode__right" comment="Preference value">Right-handed mode</string>
     <string name="pref__keyboard__one_handed_mode__left" comment="Preference value">Left-handed mode</string>
+    <string name="pref__keyboard__landscape_input_ui_mode__label" comment="Preference value">Landscape fullscreen input</string>
+    <string name="pref__keyboard__landscape_input_ui_mode__never_show" comment="Preference value">Never show</string>
+    <string name="pref__keyboard__landscape_input_ui_mode__always_show" comment="Preference value">Always show</string>
+    <string name="pref__keyboard__landscape_input_ui_mode__dynamically_show" comment="Preference value">Dynamically show</string>
     <string name="pref__keyboard__height_factor__label" comment="Preference title">Keyboard height</string>
     <string name="pref__keyboard__height_factor__extra_short" comment="Preference value">Extra-short</string>
     <string name="pref__keyboard__height_factor__short" comment="Preference value">Short</string>
@@ -138,7 +194,10 @@
     <string name="pref__keyboard__height_factor__extra_tall" comment="Preference value">Extra-tall</string>
     <string name="pref__keyboard__height_factor__custom" comment="Preference value">Custom</string>
     <string name="pref__keyboard__height_factor_custom__label" comment="Preference title">Custom keyboard height value</string>
-    <string name="pref__keyboard__bottom_offset__label" comment="Preference title">Bottom offset (for curved screens)</string>
+    <string name="pref__keyboard__bottom_offset_portrait__label" comment="Preference title">Bottom offset (portrait)</string>
+    <string name="pref__keyboard__bottom_offset_landscape__label" comment="Preference title">Bottom offset (landscape)</string>
+    <string name="pref__keyboard__key_spacing_vertical__label" comment="Preference title">Key spacing (vertical)</string>
+    <string name="pref__keyboard__key_spacing_horizontal__label" comment="Preference title">Key spacing (horizontal)</string>
     <string name="pref__keyboard__group_keypress__label" comment="Preference group title">Key press</string>
     <string name="pref__keyboard__sound_enabled__label" comment="Preference title">Sound on key press</string>
     <string name="pref__keyboard__sound_volume__label" comment="Preference title">Sound volume on key press</string>
@@ -152,12 +211,14 @@
     <string name="pref__smartbar__enabled__label" comment="Preference title">Enable Smartbar</string>
     <string name="pref__smartbar__enabled__summary" comment="Preference summary">Will show on top of the keyboard</string>
     <string name="pref__suggestion__title" comment="Preference group title">Suggestions</string>
-    <string name="pref__suggestion__enabled__label" comment="Preference title">[NYI] Display suggestions while you type</string>
-    <string name="pref__suggestion__enabled__summary" comment="Preference summary">Will show in the Smartbar</string>
-    <string name="pref__suggestion__suggest_clipboard_content__label" comment="Preference title">Clipboard content suggestions</string>
-    <string name="pref__suggestion__suggest_clipboard_content__summary" comment="Preference summary">Suggest clipboard content to paste if previously copied</string>
-    <string name="pref__suggestion__use_pref_words__label" comment="Preference title">[NYI] Next-word suggestions</string>
-    <string name="pref__suggestion__use_pref_words__summary" comment="Preference summary">Use previous words for generating suggestions</string>
+    <string translatable="false" name="pref__suggestion__enabled__label" comment="Preference title">[EXPERIMENTAL] Display suggestions while you type</string>
+    <string translatable="false" name="pref__suggestion__enabled__summary" comment="Preference summary">Will show in the Smartbar, currently regardless of the selected subtype the dictionary language is English (US)</string>
+    <string translatable="false" name="pref__suggestion__use_pref_words__label" comment="Preference title">[NOT YET INCLUDED] Next-word suggestions</string>
+    <string translatable="false" name="pref__suggestion__use_pref_words__summary" comment="Preference summary">Use previous words for generating suggestions</string>
+    <string translatable="false" name="pref__suggestion__block_possibly_offensive__label" comment="Preference title">[EXPERIMENTAL] Block possibly offensive words</string>
+    <string translatable="false" name="pref__suggestion__block_possibly_offensive__summary" comment="Preference summary">Prevents possibly offensive words from being suggested while you type</string>
+    <string translatable="false" name="pref__suggestion__suggest_clipboard_content__label" comment="Preference title">[EXPERIMENTAL] Clipboard content suggestions</string>
+    <string translatable="false" name="pref__suggestion__suggest_clipboard_content__summary" comment="Preference summary">Suggest clipboard content to paste if previously copied</string>
     <string name="pref__correction__title" comment="Preference group title">Corrections</string>
     <string name="pref__correction__auto_capitalization__label" comment="Preference title">Auto-capitalization</string>
     <string name="pref__correction__auto_capitalization__summary" comment="Preference summary">Capitalize words based on the current input context</string>
@@ -172,17 +233,25 @@
     <string name="pref__glide__enabled__summary" comment="Preference summary">Type in a word by sliding your finger through its letters</string>
     <string name="pref__glide__show_trail__label" comment="Preference title">[NYI] Show glide trail</string>
     <string name="pref__glide__show_trail__summary" comment="Preference summary">Will disappear after each word</string>
-    <string name="pref__gestures__title" comment="Preference group title">Gestures</string>
+    <string name="pref__gestures__general_title" comment="Preference group title">General gestures</string>
+    <string name="pref__gestures__space_bar_title" comment="Preference group title">Space bar gestures</string>
+    <string name="pref__gestures__other_title" comment="Preference group title">Other gestures / Gesture thresholds</string>
     <string name="pref__gestures__swipe_action__no_action" comment="Preference value for swipe action">No action</string>
     <string name="pref__gestures__swipe_action__delete_characters_precisely" comment="Preference value for swipe action">Delete characters precisely</string>
     <string name="pref__gestures__swipe_action__delete_word" comment="Preference value for swipe action">Delete current word</string>
     <string name="pref__gestures__swipe_action__delete_words_precisely" comment="Preference value for swipe action">Delete words precisely</string>
     <string name="pref__gestures__swipe_action__hide_keyboard" comment="Preference value for swipe action">Hide keyboard</string>
+    <string name="pref__gestures__swipe_action__insert_space" comment="Preference value for swipe action">Insert space</string>
     <string name="pref__gestures__swipe_action__move_cursor_up" comment="Preference value for swipe action">Move cursor up</string>
     <string name="pref__gestures__swipe_action__move_cursor_down" comment="Preference value for swipe action">Move cursor down</string>
     <string name="pref__gestures__swipe_action__move_cursor_left" comment="Preference value for swipe action">Move cursor left</string>
     <string name="pref__gestures__swipe_action__move_cursor_right" comment="Preference value for swipe action">Move cursor right</string>
+    <string name="pref__gestures__swipe_action__move_cursor_start_of_line" comment="Preference value for swipe action">Move cursor to start of line</string>
+    <string name="pref__gestures__swipe_action__move_cursor_end_of_line" comment="Preference value for swipe action">Move cursor to end of line</string>
+    <string name="pref__gestures__swipe_action__move_cursor_start_of_page" comment="Preference value for swipe action">Move cursor to start of page</string>
+    <string name="pref__gestures__swipe_action__move_cursor_end_of_page" comment="Preference value for swipe action">Move cursor to end of page</string>
     <string name="pref__gestures__swipe_action__shift" comment="Preference value for swipe action">Shift</string>
+    <string name="pref__gestures__swipe_action__show_input_method_picker" comment="Preference value for swipe action">Show input method picker</string>
     <string name="pref__gestures__swipe_action__switch_to_prev_keyboard" comment="Preference value for swipe action">Switch to previous keyboard</string>
     <string name="pref__gestures__swipe_action__switch_to_prev_subtype" comment="Preference value for swipe action">Switch to previous subtype</string>
     <string name="pref__gestures__swipe_action__switch_to_next_subtype" comment="Preference value for swipe action">Switch to next subtype</string>
@@ -193,6 +262,7 @@
     <string name="pref__gestures__space_bar_swipe_up__label" comment="Preference title">Space bar swipe up</string>
     <string name="pref__gestures__space_bar_swipe_left__label" comment="Preference title">Space bar swipe left</string>
     <string name="pref__gestures__space_bar_swipe_right__label" comment="Preference title">Space bar swipe right</string>
+    <string name="pref__gestures__space_bar_long_press__label" comment="Preference title">Space bar long press</string>
     <string name="pref__gestures__delete_key_swipe_left__label" comment="Preference title">Delete key swipe left</string>
     <string name="pref__gestures__swipe_velocity_threshold__label" comment="Preference title">Swipe velocity threshold</string>
     <string name="pref__gestures__swipe_velocity_threshold__very_slow" comment="Preference value for swipe velocity threshold">Very slow</string>
@@ -223,6 +293,28 @@
     <string name="about__view_source_code" comment="Label of View source code button in About">Source code</string>
 
     <string name="about__license__title" comment="Title of Open-source licenses dialog">Open-source licenses</string>
+
+    <!-- Assets strings -->
+    <plurals name="assets__file__authors">
+        <item quantity="one">Author</item>
+        <item quantity="other">Authors</item>
+    </plurals>
+    <string name="assets__file__name">Name</string>
+    <string name="assets__file__source">Source</string>
+    <string name="assets__action__add">Add</string>
+    <string name="assets__action__cancel">Cancel</string>
+    <string name="assets__action__cancel_confirm_title">Confirm cancel</string>
+    <string name="assets__action__cancel_confirm_message">Are you sure you want to discard any unsaved changes? This action can not be undone once executed.</string>
+    <string name="assets__action__delete">Delete</string>
+    <string name="assets__action__delete_confirm_title">Confirm delete</string>
+    <string name="assets__action__delete_confirm_message">Are you sure you want to delete \"%s\"? This action can not be undone once executed.</string>
+    <string name="assets__action__edit">Edit</string>
+    <string name="assets__action__export">Export</string>
+    <string name="assets__action__import">Import</string>
+    <string name="assets__action__no">No</string>
+    <string name="assets__action__save">Save</string>
+    <string name="assets__action__yes">Yes</string>
+    <string name="assets__error__invalid">Invalid</string>
 
     <!-- Setup UI strings -->
     <string name="setup__title" comment="Title of Setup">Setup</string>

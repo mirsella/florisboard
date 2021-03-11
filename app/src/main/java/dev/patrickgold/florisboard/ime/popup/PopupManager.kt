@@ -17,7 +17,9 @@
 package dev.patrickgold.florisboard.ime.popup
 
 import android.content.res.Configuration
-import android.view.*
+import android.view.Gravity
+import android.view.MotionEvent
+import android.view.View
 import androidx.core.content.ContextCompat.getDrawable
 import dev.patrickgold.florisboard.R
 import dev.patrickgold.florisboard.ime.media.emoji.EmojiKeyData
@@ -64,6 +66,10 @@ class PopupManager<T_KBD: View, T_KV: View>(
     val isShowingExtendedPopup: Boolean
         get() = popupViewExt.isShowing
 
+    companion object {
+        const val POPUP_EXTENSION_PATH_REL: String = "ime/text/characters/extended_popups"
+    }
+
     init {
         keyPopupWidth = keyboardView.resources.getDimension(R.dimen.key_width).toInt()
         keyPopupHeight = keyboardView.resources.getDimension(R.dimen.key_height).toInt()
@@ -107,7 +113,8 @@ class PopupManager<T_KBD: View, T_KV: View>(
                             keyView.data.popup[adjustedIndex].label, adjustedIndex
                         )
                     }
-                    KeyCode.TOGGLE_ONE_HANDED_MODE -> {
+                    KeyCode.TOGGLE_ONE_HANDED_MODE_LEFT,
+                    KeyCode.TOGGLE_ONE_HANDED_MODE_RIGHT -> {
                         getDrawable(keyView.context, R.drawable.ic_smartphone)?.let {
                             PopupExtendedView.Element.Icon(it, adjustedIndex)
                         } ?: PopupExtendedView.Element.Undefined

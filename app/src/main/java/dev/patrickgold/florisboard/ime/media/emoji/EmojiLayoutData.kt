@@ -19,13 +19,11 @@ package dev.patrickgold.florisboard.ime.media.emoji
 import android.content.Context
 import android.graphics.Paint
 import android.graphics.Typeface
-import android.util.Log
 import androidx.core.graphics.PaintCompat
 import timber.log.Timber
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
-import java.lang.Exception
 import java.util.*
 
 private const val GROUP_IDENTIFIER          = "# group: "
@@ -71,6 +69,8 @@ private fun listStringToListInt(list: List<String>): List<Int> {
     return ret.toList()
 }
 
+private var cachedEmojiLayoutMap: EmojiLayoutDataMap? = null
+
 /**
  * Reads the emoji list at the given [path] and returns an parsed [EmojiLayoutDataMap]. If the
  * given file path does not exist, an empty [EmojiLayoutDataMap] is returned.
@@ -84,6 +84,7 @@ private fun listStringToListInt(list: List<String>): List<Int> {
 fun parseRawEmojiSpecsFile(
     context: Context, path: String
 ): EmojiLayoutDataMap {
+    cachedEmojiLayoutMap?.let { return it }
     val layouts = EmojiLayoutDataMap(EmojiCategory::class.java)
     for (category in EmojiCategory.values()) {
         layouts[category] = mutableListOf()
@@ -182,5 +183,6 @@ fun parseRawEmojiSpecsFile(
             }
         }
     }
+    cachedEmojiLayoutMap = layouts
     return layouts
 }

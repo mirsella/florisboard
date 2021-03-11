@@ -23,21 +23,28 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Color
+import android.inputmethodservice.ExtractEditText
 import android.inputmethodservice.InputMethodService
 import android.media.AudioManager
-import android.os.*
+import android.os.Build
+import android.os.Handler
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.provider.Settings
-import android.util.Log
-import android.view.Gravity
-import android.view.View
-import android.view.WindowManager
+import android.view.*
+import android.view.inputmethod.CursorAnchorInfo
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
-import android.widget.ImageButton
+import android.widget.Button
+import android.widget.FrameLayout
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
+import androidx.lifecycle.*
 import com.squareup.moshi.Json
 import dev.patrickgold.florisboard.BuildConfig
 import dev.patrickgold.florisboard.R
+import dev.patrickgold.florisboard.ime.landscapeinput.LandscapeInputUiMode
 import dev.patrickgold.florisboard.ime.media.MediaInputManager
 import dev.patrickgold.florisboard.ime.popup.PopupLayerView
 import dev.patrickgold.florisboard.ime.text.TextInputManager
@@ -45,10 +52,13 @@ import dev.patrickgold.florisboard.ime.text.gestures.SwipeAction
 import dev.patrickgold.florisboard.ime.text.key.KeyCode
 import dev.patrickgold.florisboard.ime.text.key.KeyData
 import dev.patrickgold.florisboard.ime.text.keyboard.KeyboardMode
-import dev.patrickgold.florisboard.settings.SettingsMainActivity
+import dev.patrickgold.florisboard.ime.theme.Theme
+import dev.patrickgold.florisboard.ime.theme.ThemeManager
+import dev.patrickgold.florisboard.setup.SetupActivity
 import dev.patrickgold.florisboard.util.*
 import timber.log.Timber
 import java.lang.ref.WeakReference
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * Variable which holds the current [FlorisBoard] instance. To get this instance from another
@@ -60,24 +70,41 @@ private var florisboardInstance: FlorisBoard? = null
  * Core class responsible to link together both the text and media input managers as well as
  * managing the one-handed UI.
  */
-class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedListener {
+class FlorisBoard : InputMethodService(), LifecycleOwner, ClipboardManager.OnPrimaryClipChangedListener,
+    ThemeManager.OnThemeUpdatedListener {
+
     lateinit var prefs: PrefHelper
         private set
 
     val context: Context
         get() = inputWindowView?.context ?: this
+    private val serviceLifecycleDispatcher: ServiceLifecycleDispatcher = ServiceLifecycleDispatcher(this)
+
+    private var extractEditLayout: WeakReference<ViewGroup?> = WeakReference(null)
     var inputView: InputView? = null
         private set
+    private var inputWindowView: InputWindowView? = null
     var popupLayerView: PopupLayerView? = null
         private set
-    private var inputWindowView: InputWindowView? = null
-    private var eventListeners: MutableList<WeakReference<EventListener?>?> = mutableListOf()
+    private var eventListeners: CopyOnWriteArrayList<EventListener> = CopyOnWriteArrayList()
 
     private var audioManager: AudioManager? = null
-    private var imeManager:InputMethodManager? = null
+    var imeManager:InputMethodManager? = null
     var clipboardManager: ClipboardManager? = null
+    private val themeManager: ThemeManager = ThemeManager.default()
     private var vibrator: Vibrator? = null
     private val osHandler = Handler()
+
+    private var internalBatchNestingLevel: Int = 0
+    private val internalSelectionCache = object {
+        var selectionCatchCount: Int = 0
+        var oldSelStart: Int = -1
+        var oldSelEnd: Int = -1
+        var newSelStart: Int = -1
+        var newSelEnd: Int = -1
+        var candidatesStart: Int = -1
+        var candidatesEnd: Int = -1
+    }
 
     var activeEditorInstance: EditorInstance = EditorInstance.default()
 
@@ -86,6 +113,7 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
     private var currentThemeIsNight: Boolean = false
     private var currentThemeResId: Int = 0
     private var isNumberRowVisible: Boolean = false
+    private var isWindowShown: Boolean = false
 
     val textInputManager: TextInputManager
     val mediaInputManager: MediaInputManager
@@ -105,7 +133,7 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
             val activeImeIds = Settings.Secure.getString(
                 context.contentResolver,
                 Settings.Secure.ENABLED_INPUT_METHODS
-            )
+            ) ?: "(none)"
             Timber.i("List of active IMEs: $activeImeIds")
             return when {
                 BuildConfig.DEBUG -> {
@@ -121,7 +149,7 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
             val selectedImeId = Settings.Secure.getString(
                 context.contentResolver,
                 Settings.Secure.DEFAULT_INPUT_METHOD
-            )
+            ) ?: "(none)"
             Timber.i("Selected IME: $selectedImeId")
             return when {
                 BuildConfig.DEBUG -> {
@@ -151,8 +179,12 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
         }
     }
 
+    override fun getLifecycle(): Lifecycle {
+        return serviceLifecycleDispatcher.lifecycle
+    }
+
     override fun onCreate() {
-        if (BuildConfig.DEBUG) {
+        /*if (BuildConfig.DEBUG) {
             StrictMode.setThreadPolicy(
                 StrictMode.ThreadPolicy.Builder()
                     .detectDiskReads()
@@ -169,30 +201,32 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
                     .penaltyDeath()
                     .build()
             )
-        }
+        }*/
         Timber.i("onCreate()")
 
-        imeManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        serviceLifecycleDispatcher.onServicePreSuperOnCreate()
+
+        imeManager = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+        audioManager = getSystemService(Context.AUDIO_SERVICE) as? AudioManager
+        clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
         clipboardManager?.addPrimaryClipChangedListener(this)
-        vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
         prefs = PrefHelper.getDefaultInstance(this)
         prefs.initDefaultPreferences()
         prefs.sync()
         subtypeManager = SubtypeManager(this, prefs)
         activeSubtype = subtypeManager.getActiveSubtype() ?: Subtype.DEFAULT
 
-        currentThemeIsNight = prefs.internal.themeCurrentIsNight
+        currentThemeIsNight = themeManager.activeTheme.isNightTheme
         currentThemeResId = getDayNightBaseThemeId(currentThemeIsNight)
         isNumberRowVisible = prefs.keyboard.numberRow
         setTheme(currentThemeResId)
-        updateTheme()
+        themeManager.registerOnThemeUpdatedListener(this)
 
         AppVersionUtils.updateVersionOnInstallAndLastUse(this, prefs)
 
         super.onCreate()
-        eventListeners.toList().forEach { it?.get()?.onCreate() }
+        eventListeners.toList().forEach { it?.onCreate() }
     }
 
     @SuppressLint("InflateParams")
@@ -201,43 +235,109 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
 
         baseContext.setTheme(currentThemeResId)
 
-        inputWindowView = layoutInflater.inflate(R.layout.florisboard, null) as InputWindowView
-        popupLayerView = inputWindowView?.findViewById(R.id.popup_layer)
+        inputWindowView = layoutInflater.inflate(R.layout.florisboard, null) as? InputWindowView
+        inputWindowView?.isHapticFeedbackEnabled = true
 
-        eventListeners.toList().forEach { it?.get()?.onCreateInputView() }
+        eventListeners.toList().forEach { it?.onCreateInputView() }
 
         return inputWindowView
     }
 
-    fun registerInputView(inputView: InputView) {
-        Timber.i("registerInputView($inputView)")
+    /**
+     * Disable the default candidates view.
+     */
+    override fun onCreateCandidatesView(): View? {
+        return null
+    }
 
-        this.inputView = inputView
-        initializeOneHandedEnvironment()
-        updateTheme()
-        updateSoftInputWindowLayoutParameters()
-        updateOneHandedPanelVisibility()
-
-        eventListeners.toList().forEach { it?.get()?.onRegisterInputView(inputView) }
+    @SuppressLint("InflateParams")
+    override fun onCreateExtractTextView(): View? {
+        val eel = super.onCreateExtractTextView()
+        if (eel !is ViewGroup) {
+            return null
+        }
+        extractEditLayout = WeakReference(eel)
+        eel.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                extractEditLayout.get()?.let { eel ->
+                    eel.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    eel.layoutParams = FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT
+                    ).also {
+                        it.setMargins(0, 0, 0, 0)
+                    }
+                }
+            }
+        })
+        return eel
     }
 
     override fun onDestroy() {
         Timber.i("onDestroy()")
 
+        themeManager.unregisterOnThemeUpdatedListener(this)
         clipboardManager?.removePrimaryClipChangedListener(this)
         osHandler.removeCallbacksAndMessages(null)
         florisboardInstance = null
 
-        eventListeners.toList().forEach { it?.get()?.onDestroy() }
+        serviceLifecycleDispatcher.onServicePreSuperOnDestroy()
+
+        eventListeners.toList().forEach { it?.onDestroy() }
         eventListeners.clear()
         super.onDestroy()
+    }
+
+    override fun onEvaluateFullscreenMode(): Boolean {
+        return resources?.configuration?.let { config ->
+            if (config.orientation != Configuration.ORIENTATION_LANDSCAPE) {
+                false
+            } else {
+                when (prefs.keyboard.landscapeInputUiMode) {
+                    LandscapeInputUiMode.DYNAMICALLY_SHOW -> !activeEditorInstance.imeOptions.flagNoFullscreen && !activeEditorInstance.imeOptions.flagNoExtractUi
+                    LandscapeInputUiMode.NEVER_SHOW -> false
+                    LandscapeInputUiMode.ALWAYS_SHOW -> true
+                }
+            }
+        } ?: false
+    }
+
+    override fun updateFullscreenMode() {
+        super.updateFullscreenMode()
+        updateSoftInputWindowLayoutParameters()
+    }
+
+    override fun onUpdateExtractingVisibility(ei: EditorInfo?) {
+        isExtractViewShown = !activeEditorInstance.isRawInputEditor && when (prefs.keyboard.landscapeInputUiMode) {
+            LandscapeInputUiMode.DYNAMICALLY_SHOW -> !activeEditorInstance.imeOptions.flagNoExtractUi
+            LandscapeInputUiMode.NEVER_SHOW -> false
+            LandscapeInputUiMode.ALWAYS_SHOW -> true
+        }
+    }
+
+    fun registerInputView(inputView: InputView) {
+        Timber.i("registerInputView($inputView)")
+
+        window?.window?.findViewById<View>(android.R.id.content)?.let { content ->
+            popupLayerView = PopupLayerView(content.context)
+            if (content is ViewGroup) {
+                content.addView(popupLayerView)
+            }
+        }
+        this.inputView = inputView
+        initializeOneHandedEnvironment()
+        updateSoftInputWindowLayoutParameters()
+        updateOneHandedPanelVisibility()
+        themeManager.notifyCallbackReceivers()
+        setActiveInput(R.id.text_input)
+
+        eventListeners.toList().forEach { it?.onRegisterInputView(inputView) }
     }
 
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
         Timber.i("onStartInput($attribute, $restarting)")
 
         super.onStartInput(attribute, restarting)
-        currentInputConnection?.requestCursorUpdates(InputConnection.CURSOR_UPDATE_IMMEDIATE)
+        currentInputConnection?.requestCursorUpdates(InputConnection.CURSOR_UPDATE_MONITOR)
     }
 
     override fun onStartInputView(info: EditorInfo?, restarting: Boolean) {
@@ -246,8 +346,9 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
 
         super.onStartInputView(info, restarting)
         activeEditorInstance = EditorInstance.from(info, this)
+        themeManager.updateRemoteColorValues(activeEditorInstance.packageName)
         eventListeners.toList().forEach {
-            it?.get()?.onStartInputView(activeEditorInstance, restarting)
+            it?.onStartInputView(activeEditorInstance, restarting)
         }
     }
 
@@ -259,7 +360,7 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
         }
 
         super.onFinishInputView(finishingInput)
-        eventListeners.toList().forEach { it?.get()?.onFinishInputView(finishingInput) }
+        eventListeners.toList().forEach { it?.onFinishInputView(finishingInput) }
     }
 
     override fun onFinishInput() {
@@ -270,7 +371,13 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
     }
 
     override fun onWindowShown() {
-        Timber.i("onWindowShown()")
+        if (isWindowShown) {
+            Timber.i("Ignoring onWindowShown()")
+            return
+        } else {
+            Timber.i("onWindowShown()")
+        }
+        isWindowShown = true
 
         prefs.sync()
         val newIsNumberRowVisible = prefs.keyboard.numberRow
@@ -278,21 +385,27 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
             textInputManager.layoutManager.clearLayoutCache(KeyboardMode.CHARACTERS)
             isNumberRowVisible = newIsNumberRowVisible
         }
-        updateTheme()
+        themeManager.update()
         updateOneHandedPanelVisibility()
         activeSubtype = subtypeManager.getActiveSubtype() ?: Subtype.DEFAULT
         onSubtypeChanged(activeSubtype)
         setActiveInput(R.id.text_input)
 
         super.onWindowShown()
-        eventListeners.toList().forEach { it?.get()?.onWindowShown() }
+        eventListeners.toList().forEach { it?.onWindowShown() }
     }
 
     override fun onWindowHidden() {
-        Timber.i("onWindowHidden()")
+        if (!isWindowShown) {
+            Timber.i("Ignoring onWindowHidden()")
+            return
+        } else {
+            Timber.i("onWindowHidden()")
+        }
+        isWindowShown = false
 
         super.onWindowHidden()
-        eventListeners.toList().forEach { it?.get()?.onWindowHidden() }
+        eventListeners.toList().forEach { it?.onWindowHidden() }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -304,34 +417,81 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
         super.onConfigurationChanged(newConfig)
     }
 
+    /**
+     * Begins a FlorisBoard internal batch edit. This enables the application to continue sending selection updates
+     * (some apps need to to this else they absolutely refuse to give visual feedback on cursor movement etc.). The
+     * selection update is then caught if [internalBatchNestingLevel] is greater than 0, thus not delegating the
+     * update to the editor instance. This is needed because else the UI stutters when too many updates arrive in a
+     * row.
+     */
+    fun beginInternalBatchEdit() {
+        internalBatchNestingLevel++
+    }
+
+    /**
+     * Ends an internal batch edit, if [internalBatchNestingLevel] is <= 1 and calls [onUpdateSelection] with the
+     * corresponding reported selection values. This call is not caught and the editor instance and other classes are
+     * able to update the UI. Resets the internal selection cache and is ready for the next batch edit.
+     */
+    fun endInternalBatchEdit() {
+        internalBatchNestingLevel = (internalBatchNestingLevel - 1).coerceAtLeast(0)
+        if (internalBatchNestingLevel == 0) {
+            internalSelectionCache.apply {
+                if (selectionCatchCount > 0) {
+                    onUpdateSelection(
+                        oldSelStart, oldSelEnd,
+                        newSelStart, newSelEnd,
+                        candidatesStart, candidatesEnd
+                    )
+                    selectionCatchCount = 0
+                    oldSelStart = -1
+                    oldSelEnd = -1
+                    newSelStart = -1
+                    newSelEnd = -1
+                    candidatesStart = -1
+                    candidatesEnd = -1
+                }
+            }
+        }
+    }
+
     override fun onUpdateSelection(
         oldSelStart: Int, oldSelEnd: Int,
         newSelStart: Int, newSelEnd: Int,
         candidatesStart: Int, candidatesEnd: Int
     ) {
-        Timber.i("onUpdateSelection($oldSelStart, $oldSelEnd, $newSelStart, $newSelEnd, $candidatesStart, $candidatesEnd)")
-
         super.onUpdateSelection(
             oldSelStart, oldSelEnd,
             newSelStart, newSelEnd,
             candidatesStart, candidatesEnd
         )
-        activeEditorInstance.onUpdateSelection(
-            oldSelStart, oldSelEnd,
-            newSelStart, newSelEnd
-        )
-        eventListeners.toList().forEach { it?.get()?.onUpdateSelection() }
+
+        if (internalBatchNestingLevel == 0) {
+            Timber.i("onUpdateSelection($oldSelStart, $oldSelEnd, $newSelStart, $newSelEnd, $candidatesStart, $candidatesEnd)")
+            activeEditorInstance.onUpdateSelection(
+                oldSelStart, oldSelEnd,
+                newSelStart, newSelEnd,
+                candidatesStart, candidatesEnd
+            )
+            eventListeners.toList().forEach { it?.onUpdateSelection() }
+        } else {
+            Timber.i("onUpdateSelection($oldSelStart, $oldSelEnd, $newSelStart, $newSelEnd, $candidatesStart, $candidatesEnd): caught due to internal batch level of $internalBatchNestingLevel!")
+            if (internalSelectionCache.selectionCatchCount++ == 0) {
+                internalSelectionCache.oldSelStart = oldSelStart
+                internalSelectionCache.oldSelEnd = oldSelEnd
+            }
+            internalSelectionCache.newSelStart = newSelStart
+            internalSelectionCache.newSelEnd = newSelEnd
+            internalSelectionCache.candidatesStart = candidatesStart
+            internalSelectionCache.candidatesEnd = candidatesEnd
+        }
     }
 
-    /**
-     * Updates the theme of the IME Window, status and navigation bar, as well as the InputView and
-     * some of its components.
-     */
-    private fun updateTheme() {
+    override fun onThemeUpdated(theme: Theme) {
         // Rebuild the UI if the theme has changed from day to night or vice versa to prevent
         //  theme glitches with scrollbars and hints of buttons in the media UI. If the UI must be
         //  rebuild, quit this method, as it will be called again by the newly created UI.
-        val newThemeIsNightMode =  prefs.internal.themeCurrentIsNight
+        val newThemeIsNightMode =  theme.isNightTheme
         if (currentThemeIsNight != newThemeIsNightMode) {
             currentThemeResId = getDayNightBaseThemeId(newThemeIsNightMode)
             currentThemeIsNight = newThemeIsNightMode
@@ -344,9 +504,9 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
         var flags = w.decorView.systemUiVisibility
 
         // Update navigation bar theme
-        w.navigationBarColor = prefs.theme.navBarColor
+        w.navigationBarColor = theme.getAttr(Theme.Attr.WINDOW_NAVIGATION_BAR_COLOR).toSolidColor().color
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-            flags = if (prefs.theme.navBarIsLight) {
+            flags = if (theme.getAttr(Theme.Attr.WINDOW_NAVIGATION_BAR_LIGHT).toOnOff().state) {
                 flags or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
             } else {
                 flags and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
@@ -365,16 +525,45 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
         w.decorView.systemUiVisibility = flags
 
         // Update InputView theme
-        inputView?.setBackgroundColor(prefs.theme.keyboardBgColor)
-        inputView?.oneHandedCtrlPanelStart?.setBackgroundColor(prefs.theme.oneHandedBgColor)
-        inputView?.oneHandedCtrlPanelEnd?.setBackgroundColor(prefs.theme.oneHandedBgColor)
-        ColorStateList.valueOf(prefs.theme.oneHandedButtonFgColor).also {
+        inputView?.setBackgroundColor(theme.getAttr(Theme.Attr.KEYBOARD_BACKGROUND).toSolidColor().color)
+        inputView?.oneHandedCtrlPanelStart?.setBackgroundColor(theme.getAttr(Theme.Attr.ONE_HANDED_BACKGROUND).toSolidColor().color)
+        inputView?.oneHandedCtrlPanelEnd?.setBackgroundColor(theme.getAttr(Theme.Attr.ONE_HANDED_BACKGROUND).toSolidColor().color)
+        ColorStateList.valueOf(theme.getAttr(Theme.Attr.ONE_HANDED_FOREGROUND).toSolidColor().color).also {
             inputView?.oneHandedCtrlMoveStart?.imageTintList = it
             inputView?.oneHandedCtrlMoveEnd?.imageTintList = it
             inputView?.oneHandedCtrlCloseStart?.imageTintList = it
             inputView?.oneHandedCtrlCloseEnd?.imageTintList = it
         }
-        eventListeners.toList().forEach { it?.get()?.onApplyThemeAttributes() }
+        inputView?.invalidate()
+
+        // Update ExtractTextView theme and attributes
+        extractEditLayout.get()?.let { eel ->
+            val p = resources.getDimension(R.dimen.landscapeInputUi_padding).toInt()
+            eel.setPadding(p, p, 0, p)
+            eel.setBackgroundColor(theme.getAttr(Theme.Attr.EXTRACT_EDIT_LAYOUT_BACKGROUND).toSolidColor().color)
+            eel.findViewById<ExtractEditText>(android.R.id.inputExtractEditText)?.let { eet ->
+                val p2 = resources.getDimension(R.dimen.landscapeInputUi_editText_padding).toInt()
+                eet.setPadding(p2, p2, p2, p2)
+                eet.background = ContextCompat.getDrawable(this, R.drawable.edit_text_background)?.also { d ->
+                    DrawableCompat.setTint(d, theme.getAttr(Theme.Attr.WINDOW_COLOR_PRIMARY).toSolidColor().color)
+                }
+                eet.setTextColor(theme.getAttr(Theme.Attr.EXTRACT_EDIT_LAYOUT_FOREGROUND).toSolidColor().color)
+                eet.setHintTextColor(theme.getAttr(Theme.Attr.EXTRACT_EDIT_LAYOUT_FOREGROUND_ALT).toSolidColor().color)
+                eet.highlightColor = theme.getAttr(Theme.Attr.WINDOW_COLOR_PRIMARY).toSolidColor().color
+            }
+            eel.findViewWithType(FrameLayout::class)?.let { fra ->
+                fra.background = null
+            }
+            eel.findViewWithType(Button::class)?.let { btn ->
+                btn.background = ContextCompat.getDrawable(this, R.drawable.shape_rect_rounded)?.also { d ->
+                    DrawableCompat.setTint(d, theme.getAttr(Theme.Attr.EXTRACT_ACTION_BUTTON_BACKGROUND).toSolidColor().color)
+                }
+                btn.setTextColor(theme.getAttr(Theme.Attr.EXTRACT_ACTION_BUTTON_FOREGROUND).toSolidColor().color)
+            }
+            eel.invalidate()
+        }
+
+        eventListeners.toList().forEach { it?.onApplyThemeAttributes() }
     }
 
     override fun onComputeInsets(outInsets: Insets?) {
@@ -390,11 +579,6 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
         val visibleTopY = inputWindowView.height - inputView.measuredHeight
         outInsets?.contentTopInsets = visibleTopY
         outInsets?.visibleTopInsets = visibleTopY
-    }
-
-    override fun updateFullscreenMode() {
-        super.updateFullscreenMode()
-        updateSoftInputWindowLayoutParameters()
     }
 
     /**
@@ -424,7 +608,12 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
         if (prefs.keyboard.vibrationEnabled) {
             var vibrationStrength = prefs.keyboard.vibrationStrength
             if (vibrationStrength == -1 && prefs.keyboard.vibrationEnabledSystem) {
-                vibrationStrength = 36
+                val hapticsPerformed =
+                    inputWindowView?.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
+
+                if (hapticsPerformed == false) {
+                    vibrationStrength = 36
+                }
             }
             if (vibrationStrength > 0) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -476,15 +665,15 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
     }
 
     /**
-     * Hides the IME and launches [SettingsMainActivity].
+     * Hides the IME and launches [SetupActivity].
      */
     fun launchSettings() {
         requestHideSelf(0)
-        val i = Intent(this, SettingsMainActivity::class.java)
+        val i = Intent(this, SetupActivity::class.java)
         i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or
                   Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED or
                   Intent.FLAG_ACTIVITY_CLEAR_TOP
-        startActivity(i)
+        applicationContext.startActivity(i)
     }
 
     /**
@@ -500,11 +689,28 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
                 switchToPreviousInputMethod()
             } else {
                 window.window?.let { window ->
+                    @Suppress("DEPRECATION")
                     imeManager?.switchToLastInputMethod(window.attributes.token)
                 }
             }
         } catch (e: Exception) {
             Timber.e(e,"Unable to switch to the previous IME")
+            imeManager?.showInputMethodPicker()
+        }
+    }
+
+    fun switchToNextKeyboard(){
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                switchToNextInputMethod(false)
+            } else {
+                window.window?.let { window ->
+                    @Suppress("DEPRECATION")
+                    imeManager?.switchToNextInputMethod(window.attributes.token, false)
+                }
+            }
+        } catch (e: Exception) {
+            Timber.e(e,"Unable to switch to the next IME")
             imeManager?.showInputMethodPicker()
         }
     }
@@ -527,12 +733,10 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
     fun setActiveInput(type: Int) {
         when (type) {
             R.id.text_input -> {
-                inputView?.mainViewFlipper?.displayedChild =
-                    inputView?.mainViewFlipper?.indexOfChild(textInputManager.textViewGroup) ?: 0
+                inputView?.mainViewFlipper?.displayedChild = 0
             }
             R.id.media_input -> {
-                inputView?.mainViewFlipper?.displayedChild =
-                    inputView?.mainViewFlipper?.indexOfChild(mediaInputManager.mediaViewGroup) ?: 0
+                inputView?.mainViewFlipper?.displayedChild = 1
             }
         }
     }
@@ -562,10 +766,10 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
         updateOneHandedPanelVisibility()
     }
 
-    fun toggleOneHandedMode() {
+    fun toggleOneHandedMode(isRight: Boolean) {
         when (prefs.keyboard.oneHandedMode) {
             "off" -> {
-                prefs.keyboard.oneHandedMode = "end"
+                prefs.keyboard.oneHandedMode = if (isRight) { "end" } else { "start" }
             }
             else -> {
                 prefs.keyboard.oneHandedMode = "off"
@@ -601,7 +805,7 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
     }
 
     override fun onPrimaryClipChanged() {
-        eventListeners.toList().forEach { it?.get()?.onPrimaryClipChanged() }
+        eventListeners.toList().forEach { it?.onPrimaryClipChanged() }
     }
 
     /**
@@ -611,7 +815,7 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
      * @return True if the listener has been added successfully, false otherwise.
      */
     fun addEventListener(listener: EventListener): Boolean {
-        return eventListeners.add(WeakReference(listener))
+        return eventListeners.add(listener)
     }
 
     /**
@@ -624,12 +828,7 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
      *  value may also indicate that the [listener] was not added previously.
      */
     fun removeEventListener(listener: EventListener): Boolean {
-        eventListeners.toList().forEach {
-            if (it?.get() == listener) {
-                return eventListeners.remove(it)
-            }
-        }
-        return false
+        return eventListeners.remove(listener)
     }
 
     interface EventListener {
@@ -674,14 +873,21 @@ class FlorisBoard : InputMethodService(), ClipboardManager.OnPrimaryClipChangedL
         val defaultSubtypesLanguageNames: List<String>
 
         init {
-            val tmpCodes = mutableListOf<String>()
-            val tmpNames = mutableListOf<String>()
+            val tmpList = mutableListOf<Pair<String, String>>()
             for (defaultSubtype in defaultSubtypes) {
-                tmpCodes.add(defaultSubtype.locale.toString())
-                tmpNames.add(defaultSubtype.locale.displayName)
+                tmpList.add(Pair(defaultSubtype.locale.toString(), defaultSubtype.locale.displayName))
             }
-            defaultSubtypesLanguageCodes = tmpCodes.toList()
-            defaultSubtypesLanguageNames = tmpNames.toList()
+            // Sort language list alphabetically by the display name of a language
+            tmpList.sortBy { it.second }
+            // Move selected English variants to the top of the list
+            for (languageCode in listOf("en_CA", "en_AU", "en_UK", "en_US")) {
+                val index: Int = tmpList.indexOfFirst { it.first == languageCode }
+                if (index > 0) {
+                    tmpList.add(0, tmpList.removeAt(index))
+                }
+            }
+            defaultSubtypesLanguageCodes = tmpList.map { it.first }.toList()
+            defaultSubtypesLanguageNames = tmpList.map { it.second }.toList()
         }
     }
 }

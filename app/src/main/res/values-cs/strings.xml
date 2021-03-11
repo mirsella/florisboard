@@ -7,6 +7,11 @@
     <string name="one_handed__close_btn_content_description" comment="Content description for the one-handed close button">Zavřít režim jedné ruky.</string>
     <string name="one_handed__move_start_btn_content_description" comment="Content description for the one-handed move to left button">Posunout klávesnici doleva.</string>
     <string name="one_handed__move_end_btn_content_description" comment="Content description for the one-handed move to right button">Posunout klávesnici doprava.</string>
+    <!-- Private mode info dialog strings -->
+    <string name="private_mode_dialog__title" comment="Title of the private mode dialog">Soukromý režim</string>
+    <!--
+    <string name="private_mode_dialog__text" comment="Text of the private mode dialog">The icon you just clicked at indicates that FlorisBoard works in the private mode. This means that all features which require to process and temporarily save your input stop working. This applies at minimum to the following features (if they\'ve been turned on previously):\n\n - Next word algorithm adjustments\n\n - Clipboard paste suggestions\n\n - Clipboard history\n\nFlorisBoard enters this mode either if an app requests it or if it was specifically enabled in the advanced settings.</string>
+-->
     <!-- Media strings -->
     <string name="media__tab__emojis" comment="Tab description for emojis in the media UI">Emoji</string>
     <string name="media__tab__emoticons" comment="Tab description for emoticons in the media UI">Emotikony</string>
@@ -28,10 +33,13 @@
     <string name="smartbar__quick_action__open_settings" comment="Content-description for the settings quick action in Smartbar">Otevřít nastavení.</string>
     <string name="smartbar__quick_action__switch_to_editing_context" comment="Content-description for the editing quick action in Smartbar">Přepnout na editor textu.</string>
     <string name="smartbar__quick_action__switch_to_media_context" comment="Content-description for the media quick action in Smartbar">Přepnout na vkládaní médií.</string>
+    <string name="smartbar__quick_action__undo" comment="Content-description for the undo quick action in Smartbar">Undo tlačítko pro vrácení poslední akce</string>
+    <string name="smartbar__quick_action__redo" comment="Content-description for the redo quick action in Smartbar">Redo tlačítko pro obnovení poslední akce</string>
     <!-- Settings UI strings -->
     <string name="settings__title" comment="Title of Settings">Nastavení</string>
     <string name="settings__menu" comment="Hint of top-right three-dot icon in Settings">Více možností</string>
     <string name="settings__menu_help" comment="Three-dot menu entry for Help and Feedback web link">Pomoc &amp; odezva</string>
+    <string name="settings__help" comment="General label for help buttons in Settings">Nápověda</string>
     <string name="settings__navigation__home" comment="Long-press hint of bottom nav item Home in Settings">Domov</string>
     <string name="settings__navigation__keyboard" comment="Long-press hint of bottom nav item Keyboard in Settings">Klávesnice</string>
     <string name="settings__navigation__typing" comment="Long-press hint of bottom nav item Typing in Settings">Psaní</string>
@@ -56,39 +64,11 @@
     <string name="settings__localization__subtype_error_already_exists" comment="Error message shown in subtype dialog when a subtype to add already exists">Tento podtyp již existuje!</string>
     <string name="settings__theme__title" comment="Title of the Theme fragment">Motiv klávesnice</string>
     <string name="settings__theme__undefined" comment="General string for an undefined preference value">Definován</string>
-    <string name="settings__theme__preset_title" comment="Label of the theme preset preference">Téma</string>
-    <string name="settings__theme__preset_summary" comment="Summary of the theme preset preference">Vlastní (na základě %s)</string>
-    <string name="settings__theme__preset_dialog_selected_theme" comment="Label of the selected themes list">Vybrané téma:</string>
-    <string name="settings__theme__preset_dialog_available_themes" comment="Label of the available themes list">Dostupná témata:</string>
-    <string name="settings__theme__preset_dialog_alt_arrow_right" comment="Content description of the theme selection button in theme dialog">Šipka vpravo</string>
-    <string name="settings__theme__background" comment="General label for a background preference">Pozadí</string>
-    <string name="settings__theme__background_active" comment="General label for an active background preference">Barva pozadí při aktivní</string>
-    <string name="settings__theme__background_pressed" comment="General label for a pressed background preference">Barva pozadí při stisknutí</string>
-    <string name="settings__theme__foreground" comment="General label for a foreground preference">Barva popředí</string>
-    <string name="settings__theme__foreground_alt" comment="General label for an alternate foreground preference">Barva popředí (alternativní)</string>
-    <string name="settings__theme__foreground_capslock" comment="General label for a capslock foreground preference">Barva popředí (caps lock)</string>
-    <string name="settings__theme__dialog_title" comment="Title of the color selection dialog for a single theme preference">Vyberte barvu</string>
     <string name="settings__theme__group_window" comment="Theme group label">Okno &amp; systém</string>
     <string name="settings__theme__group_keyboard" comment="Theme group label">Klávesnice</string>
     <string name="settings__theme__group_key" comment="Theme group label">Klíč</string>
-    <string name="settings__theme__group_key_enter" comment="Theme group label">Klávesa</string>
-    <string name="settings__theme__group_key_popup" comment="Theme group label">Vyskakovací okno klíče</string>
-    <string name="settings__theme__group_key_shift" comment="Theme group label">Shift</string>
     <string name="settings__theme__group_media" comment="Theme group label">Mediální kontext</string>
-    <string name="settings__theme__group_one_handed" comment="Theme group label">Jednoruční</string>
-    <string name="settings__theme__group_one_handed_button" comment="Theme group label">Tlačítko s jednou rukou</string>
     <string name="settings__theme__group_smartbar" comment="Theme group label">Smartbar</string>
-    <string name="settings__theme__group_smartbar_button" comment="Theme group label">Tlačítko Smartbar</string>
-    <string name="pref__theme__colorPrimary_title" comment="Title of Color primary theme preference">Primární barva</string>
-    <string name="pref__theme__colorPrimary_summary" comment="Summary of Color primary theme preference">Aplikováno na hlavní kartu Media ripple a zvýraznění výběru</string>
-    <string name="pref__theme__colorPrimaryDark_title" comment="Title of Color primary dark theme preference">Primární barva (tmavá)</string>
-    <string name="pref__theme__colorPrimaryDark_summary" comment="Summary of Color primary dark theme preference">V současné době se nepoužívá, vyhrazeno pro budoucí implementaci</string>
-    <string name="pref__theme__colorAccent_title" comment="Title of Color accent theme preference">Barva přízvuku</string>
-    <string name="pref__theme__colorAccent_summary" comment="Summary of Color accent theme preference">Aplikováno na kartu Emoji ripple</string>
-    <string name="pref__theme__navBarColor_title" comment="Title of Nav bar color theme preference">Barva navigačního panelu</string>
-    <string name="pref__theme__navBarColor_summary" comment="Summary of Nav bar color theme preference">Pozadí navigační lišty.</string>
-    <string name="pref__theme__navBarIsLight_title" comment="Title of Nav bar is light theme preference">Navigační lišta tmavé popředí</string>
-    <string name="pref__theme__navBarIsLight_summary" comment="Summary of Nav bar is light theme preference">Nastavte na Zapnuto pro tmavé nebo vypnuté pro světlé popředí.</string>
     <string name="settings__keyboard__title" comment="Title of Keyboard preferences fragment">Předvolby Klávesnice</string>
     <string name="pref__keyboard__group_keys__label" comment="Preference group title">Šipka</string>
     <string name="pref__keyboard__font_size_multiplier_portrait__label" comment="Preference title">Multiplikátor velikosti písma (portrét)</string>
@@ -108,7 +88,6 @@
     <string name="pref__keyboard__height_factor__extra_tall" comment="Preference value">Extra vysoká</string>
     <string name="pref__keyboard__height_factor__custom" comment="Preference value">Vlastní</string>
     <string name="pref__keyboard__height_factor_custom__label" comment="Preference title">Vlastní hodnota výšky klávesnice</string>
-    <string name="pref__keyboard__bottom_offset__label" comment="Preference title">Odstup zdola (pro zahnuté displeje)</string>
     <string name="pref__keyboard__group_keypress__label" comment="Preference group title">Stisk klávesy</string>
     <string name="pref__keyboard__sound_enabled__label" comment="Preference title">Zvuk při stisku klávesy</string>
     <string name="pref__keyboard__sound_volume__label" comment="Preference title">Hlasitost zvuku při stisku klávesy</string>
@@ -119,11 +98,6 @@
     <string name="pref__keyboard__long_press_delay__label" comment="Preference title">Dlouhé zpoždění stisknutí tlačítka</string>
     <string name="settings__typing__title" comment="Title of Typing experience fragment">Psaní zkušenosti</string>
     <string name="pref__suggestion__title" comment="Preference group title">Návrh</string>
-    <string name="pref__suggestion__enabled__label" comment="Preference title">[NYI] zobrazit návrhy při psaní</string>
-    <string name="pref__suggestion__suggest_clipboard_content__label" comment="Preference title">Návrhy obsahu schránky</string>
-    <string name="pref__suggestion__suggest_clipboard_content__summary" comment="Preference summary">Navrhněte obsah schránky, který chcete vložit, pokud byl dříve zkopírován</string>
-    <string name="pref__suggestion__use_pref_words__label" comment="Preference title">[NYI] návrhy dalšího slova</string>
-    <string name="pref__suggestion__use_pref_words__summary" comment="Preference summary">Použijte předchozí slova pro generování návrhů</string>
     <string name="pref__correction__title" comment="Preference group title">Oprava</string>
     <string name="pref__correction__auto_capitalization__label" comment="Preference title">Automatická kapitalizace</string>
     <string name="pref__correction__auto_capitalization__summary" comment="Preference summary">Vydělávejte slova na základě aktuálního vstupního kontextu</string>
@@ -137,7 +111,6 @@
     <string name="pref__glide__enabled__summary" comment="Preference summary">Zadejte slovo posunutím prstu jeho písmeny</string>
     <string name="pref__glide__show_trail__label" comment="Preference title">[NYI] Zobrazit sestupovou stopu</string>
     <string name="pref__glide__show_trail__summary" comment="Preference summary">Zmizí po každém slově</string>
-    <string name="pref__gestures__title" comment="Preference group title">Gesto</string>
     <string name="pref__gestures__swipe_action__no_action" comment="Preference value for swipe action">Žádná akce</string>
     <string name="pref__gestures__swipe_action__delete_characters_precisely" comment="Preference value for swipe action">Smazat znaky přesně</string>
     <string name="pref__gestures__swipe_action__delete_word" comment="Preference value for swipe action">Smazat aktuální slovo</string>
@@ -181,6 +154,7 @@
     <string name="about__view_privacy_policy" comment="Label of View privacy policy button in About">Soukromí</string>
     <string name="about__view_source_code" comment="Label of View source code button in About">Kód</string>
     <string name="about__license__title" comment="Title of Open-source licenses dialog">Open-source licence</string>
+    <!-- Assets strings -->
     <!-- Setup UI strings -->
     <string name="setup__title" comment="Title of Setup">Nastavení</string>
     <string name="setup__prev_button" comment="Label of Previous button in Setup (try to find a short translation due to limited space in UI)">Náhled</string>
@@ -212,6 +186,6 @@
     <string name="crash_notification_channel__title" comment="Title of crash notification channel">FlorisBoard chybové hlášení</string>
     <string name="crash_once_notification__title" comment="Title of the notification for a single crash">FlorisBoard přestal fungovat…</string>
     <string name="crash_once_notification__body" comment="Body of the notification for a single crash">Klepnutím zobrazíte podrobnosti o chybě</string>
-    <string name="crash_multiple_notification__title" comment="Title of the notification for consecutive crashes">Zdá se, že FlorisBoard přestane pracovat opakovaně…</string>
-    <string name="crash_multiple_notification__body" comment="Body of the notification for consecutive crashes">Klesající zpět na předchozí klávesnici zastavit nekonečné crash loop. Klepnutím zobrazíte podrobnosti o chybě</string>
+    <string name="crash_multiple_notification__title" comment="Title of the notification for consecutive crashes">Zdá se, že FlorisBoard přestal opakovaně pracovat…</string>
+    <string name="crash_multiple_notification__body" comment="Body of the notification for consecutive crashes">Vrácení zpět na předchozí klávesnici pro zastavení nekonečného crash loopu. Klepnutím zobrazíte podrobnosti o chybě</string>
 </resources>

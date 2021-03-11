@@ -45,22 +45,19 @@
 
             <Button
                 android:id="@+id/candidate0"
-                style="@style/SmartbarCandidate"
-                android:text="suggestions"/>
+                style="@style/SmartbarCandidate"/>
 
             <View style="@style/SmartbarDivider"/>
 
             <Button
                 android:id="@+id/candidate1"
-                style="@style/SmartbarCandidate"
-                android:text="not yet"/>
+                style="@style/SmartbarCandidate"/>
 
             <View style="@style/SmartbarDivider"/>
 
             <Button
                 android:id="@+id/candidate2"
-                style="@style/SmartbarCandidate"
-                android:text="implemented"/>
+                style="@style/SmartbarCandidate"/>
 
         </LinearLayout>
 
@@ -110,25 +107,26 @@
                 android:contentDescription="@string/smartbar__quick_action__one_handed_mode"
                 android:src="@drawable/ic_smartphone"/>
 
-            <!-- TODO: find better icon for editing -->
             <dev.patrickgold.florisboard.ime.text.smartbar.SmartbarQuickActionButton
                 android:id="@+id/quick_action_switch_to_editing_context"
                 style="@style/SmartbarQuickAction"
                 android:contentDescription="@string/smartbar__quick_action__switch_to_editing_context"
-                android:src="@drawable/ic_format_italic"/>
+                android:src="@drawable/ic_open_with"/>
 
         </LinearLayout>
 
         <dev.patrickgold.florisboard.ime.text.keyboard.KeyboardView
             android:id="@+id/clipboard_cursor_row"
             style="@style/SmartbarContainer"
-            android:layoutDirection="ltr"/>
+            android:layoutDirection="ltr"
+            app:isSmartbarKeyboard="true"/>
 
         <dev.patrickgold.florisboard.ime.text.keyboard.KeyboardView
             android:id="@+id/number_row"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layoutDirection="ltr"/>
+            android:layoutDirection="ltr"
+            app:isSmartbarKeyboard="true"/>
 
     </dev.patrickgold.florisboard.ime.core.FlorisViewFlipper>
 

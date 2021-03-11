@@ -4,6 +4,9 @@
     "qwerty": "QWERTY",
     "qwertz": "QWERTZ",
     "azerty": "AZERTY",
+    "bepo": "BÉPO",
+    "bulgarian_bds": "Bulgarian (BDS)",
+    "bulgarian_phonetic": "Bulgarian (Phonetic)",
     "spanish": "Spanish (QWERTY)",
     "norwegian": "Norwegian (QWERTY)",
     "swedish_finnish": "Swedish/Finnish (QWERTY)",
@@ -20,7 +23,13 @@
     "colemak": "Colemak",
     "colemak-dhm": "Colemak-dhm",
     "dvorak": "Dvorak",
-    "canadian_french": "Canadian French (QWERTY)"
+    "jcuken_russian": "Russian (JCUKEN)",
+    "canadian_french": "Canadian French (QWERTY)",
+    "greek": "Ελληνικά",
+    "hebrew": "עברית",
+    "serbian_latin": "Serbian (QWERTZ)",
+    "serbian_cyrillic": "Serbian (ЉЊЕРТЗ)",
+    "kurdish": "کوردی"
   },
   "defaultSubtypes": [
     {
@@ -157,6 +166,61 @@
       "id": 1101,
       "languageTag": "eo",
       "preferredLayout": "esperanto"
+    },
+    {
+      "id": 1201,
+      "languageTag": "hr",
+      "preferredLayout": "qwertz"
+    },
+    {
+      "id": 1301,
+      "languageTag": "ru",
+      "preferredLayout": "jcuken_russian"
+    },
+    {
+      "id": 1401,
+      "languageTag": "el",
+      "preferredLayout": "greek"
+    },
+    {
+      "id": 1501,
+      "languageTag": "ro",
+      "preferredLayout": "qwerty"
+    },
+    {
+      "id": 1601,
+      "languageTag": "pl",
+      "preferredLayout": "qwerty"
+    },
+    {
+      "id": 1701,
+      "languageTag": "bg-bg",
+      "preferredLayout": "bulgarian_phonetic"
+    },
+    {
+      "id": 1801,
+      "languageTag": "tr",
+      "preferredLayout": "qwerty"
+    },
+    {
+      "id": 1901,
+      "languageTag": "iw-IL",
+      "preferredLayout": "hebrew"
+    },
+    {
+      "id": 2001,
+      "languageTag": "ckb",
+      "preferredLayout": "kurdish"
+    },
+    {
+      "id": 2101,
+      "languageTag": "sr-RS",
+      "preferredLayout": "serbian_cyrillic"
+    },
+    {
+      "id": 2201,
+      "languageTag": "lv-LV",
+      "preferredLayout": "qwerty"
     }
   ]
 }

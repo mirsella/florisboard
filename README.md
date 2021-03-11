@@ -63,9 +63,10 @@ milestones, please refer to the [Feature roadmap](#feature-roadmap).
 
 ### Layouts
 * [x] Latin character layouts (QWERTY, QWERTZ, AZERTY, Swiss, Spanish,
-      Norwegian, Swedish/Finnish, Icelandic, Danish, Hungarian); more
-      coming in future versions
-* [x] Non-latin character layouts (Arabic, Persian)
+      Norwegian, Swedish/Finnish, Icelandic, Danish, Hungarian,
+      Croatian, Polish, Romanian, Colemak, Dvorak); more coming in future versions
+* [x] Non-latin character layouts (Arabic, Persian, Greek, Russian
+      (JCUKEN))
 * [x] Adapt to situation in app (password, url, text, etc. )
 * [x] Special character layout(s)
 * [x] Numeric layout
@@ -78,7 +79,7 @@ milestones, please refer to the [Feature roadmap](#feature-roadmap).
 * [x] Setup wizard
 * [x] Preferences screen
 * [x] Customize look and behaviour of keyboard
-* [x] Theme presets (currently only day/night theme)
+* [x] Theme presets (currently only day/night theme + borderless)
 * [x] Theme customization
 * [x] Subtype selection (language/layout)
 * [x] Keyboard behaviour preferences
@@ -105,7 +106,7 @@ most likely be delayed back, even though I'm eager to stick to these as
 close as possible.
 
 ### [v0.4.0](https://github.com/florisboard/florisboard/milestone/4)
-- Module A: Smartbar rework (Implemented with #91)
+- Module A: Smartbar rework (Implemented with [#91])
   - Ability to enable/disable Smartbar (features below thus only work if
     Smartbar is enabled)
   - Dynamic switching between clipboard tools and word suggestions
@@ -114,15 +115,14 @@ close as possible.
   - Complete rework of the Smartbar code base and the Smartbar layout
     definition in XML
 
-- Module B: Composing suggestions
+- Module B: Composing suggestions (Phase 1: [#329])
   - Auto-suggestion of words based of precompiled dictionaries
   - Management of custom dictionary entries
-  - Opt-in only: Learning of often typed word pais to better predict next
-    words over time. Data collected here is stored locally and never leaves
+  - Next-word suggestions by training language models. Data collected here is stored locally and never leaves
     the user's device.
 
-- Module C: Extension packs
-  - Ability to load dictionaries (and later potentionally other cool
+- Module C: Extension packs (base implementation with [#162])
+  - Ability to load dictionaries (and later potentially other cool
     features too) only if needed to keep the core APK size small
   - Currently unclear how exactly this will work, but this is definitely
     a must-have feature
@@ -130,6 +130,14 @@ close as possible.
 - Module D: Glide typing
   - Swiping over the characters will automatically convert this to a word
   - Possibly also add improvements based on the Flow keyboard
+
+- Module E: Theme rework (Implemented with [#162])
+  - Themes are now based on the Asset schema
+  - Dynamic theme creation
+  - Different theme modes (`Always day`, `Always night`, `Follow system`
+    and `Follow time`)
+  - Define a separate theme both for day and night theme
+  - Adapt to app theme if possible
 
 ### [v0.5.0](https://github.com/florisboard/florisboard/milestone/5)
 There's no exact roadmap yet but it is planned that the media part of
@@ -144,6 +152,10 @@ Backlog (currently not assigned to any milestone):
 
 - Theme import/export
 - Floating keyboard
+
+[#91]: https://github.com/florisboard/florisboard/pull/91
+[#162]: https://github.com/florisboard/florisboard/pull/162
+[#329]: https://github.com/florisboard/florisboard/pull/329
 
 ## Contributing
 Wanna contribute to FlorisBoard? That's great to hear! There are lots of
@@ -169,6 +181,23 @@ to get more information on this topic.
   [JakeWharton](https://github.com/JakeWharton)
 * [kotlin-result](https://github.com/michaelbull/kotlin-result) by
   [Michael Bull](https://github.com/michaelbull)
+* [expandable-fab](https://github.com/nambicompany/expandable-fab) by
+  [Nambi](https://github.com/nambicompany)
+
+## Usage notes for included binary dictionary files
+All binary dictionaries included within this project in
+(this)[app/src/main/assets/ime/dict) asset folder are built from various
+sources, as stated below.
+
+### Source 1: [wordfreq library by LuminosoInsight](https://github.com/LuminosoInsight/wordfreq):
+`wordfreq` is a repository which provides both a Python library and raw
+data (the wordlists). Only the data has been extracted in order to build
+binary dictionary files from it. `wordfreq`'s data is licensed under the
+Creative Commons Attribution-ShareAlike 4.0 license
+(https://creativecommons.org/licenses/by-sa/4.0/).
+
+For further information on what wordfreq's data depends on, see
+(https://github.com/LuminosoInsight/wordfreq#license).
 
 ## License
 ```
