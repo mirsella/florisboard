@@ -22,6 +22,7 @@ import android.provider.Settings
 import androidx.preference.PreferenceManager
 import dev.patrickgold.florisboard.R
 import dev.patrickgold.florisboard.ime.landscapeinput.LandscapeInputUiMode
+import dev.patrickgold.florisboard.ime.onehanded.OneHandedMode
 import dev.patrickgold.florisboard.ime.text.gestures.DistanceThreshold
 import dev.patrickgold.florisboard.ime.text.gestures.SwipeAction
 import dev.patrickgold.florisboard.ime.text.gestures.VelocityThreshold
@@ -52,6 +53,7 @@ class PrefHelper(
     val smartbar = Smartbar(this)
     val suggestion = Suggestion(this)
     val theme = Theme(this)
+    val clipboard = Clipboard(this)
 
     /**
      * Checks the cache if an entry for [key] exists, else calls [getPrefInternal] to retrieve the
@@ -309,26 +311,28 @@ class PrefHelper(
     class Keyboard(private val prefHelper: PrefHelper) {
         companion object {
             const val BOTTOM_OFFSET_PORTRAIT =          "keyboard__bottom_offset_portrait"
-            const val BOTTOM_OFFSET_LANDSCAPE =         "keyboard__bottom_offset_landscape"
-            const val FONT_SIZE_MULTIPLIER_PORTRAIT =   "keyboard__font_size_multiplier_portrait"
-            const val FONT_SIZE_MULTIPLIER_LANDSCAPE =  "keyboard__font_size_multiplier_landscape"
-            const val HEIGHT_FACTOR =                   "keyboard__height_factor"
-            const val HEIGHT_FACTOR_CUSTOM =            "keyboard__height_factor_custom"
-            const val HINTED_NUMBER_ROW_MODE =          "keyboard__hinted_number_row_mode"
-            const val HINTED_SYMBOLS_MODE =             "keyboard__hinted_symbols_mode"
-            const val KEY_SPACING_HORIZONTAL =          "keyboard__key_spacing_horizontal"
-            const val KEY_SPACING_VERTICAL =            "keyboard__key_spacing_vertical"
-            const val LANDSCAPE_INPUT_UI_MODE =         "keyboard__landscape_input_ui_mode"
-            const val LONG_PRESS_DELAY =                "keyboard__long_press_delay"
-            const val NUMBER_ROW =                      "keyboard__number_row"
-            const val ONE_HANDED_MODE =                 "keyboard__one_handed_mode"
-            const val POPUP_ENABLED =                   "keyboard__popup_enabled"
-            const val SOUND_ENABLED =                   "keyboard__sound_enabled"
-            const val SOUND_VOLUME =                    "keyboard__sound_volume"
-            const val UTILITY_KEY_ACTION =              "keyboard__utility_key_action"
-            const val UTILITY_KEY_ENABLED =             "keyboard__utility_key_enabled"
-            const val VIBRATION_ENABLED =               "keyboard__vibration_enabled"
-            const val VIBRATION_STRENGTH =              "keyboard__vibration_strength"
+            const val BOTTOM_OFFSET_LANDSCAPE =             "keyboard__bottom_offset_landscape"
+            const val FONT_SIZE_MULTIPLIER_PORTRAIT =       "keyboard__font_size_multiplier_portrait"
+            const val FONT_SIZE_MULTIPLIER_LANDSCAPE =      "keyboard__font_size_multiplier_landscape"
+            const val HEIGHT_FACTOR =                       "keyboard__height_factor"
+            const val HEIGHT_FACTOR_CUSTOM =                "keyboard__height_factor_custom"
+            const val HINTED_NUMBER_ROW_MODE =              "keyboard__hinted_number_row_mode"
+            const val HINTED_SYMBOLS_MODE =                 "keyboard__hinted_symbols_mode"
+            const val KEY_SPACING_HORIZONTAL =              "keyboard__key_spacing_horizontal"
+            const val KEY_SPACING_VERTICAL =                "keyboard__key_spacing_vertical"
+            const val LANDSCAPE_INPUT_UI_MODE =             "keyboard__landscape_input_ui_mode"
+            const val LONG_PRESS_DELAY =                    "keyboard__long_press_delay"
+            const val NUMBER_ROW =                          "keyboard__number_row"
+            const val ONE_HANDED_MODE =                     "keyboard__one_handed_mode"
+            const val ONE_HANDED_MODE_SCALE_FACTOR =        "keyboard__one_handed_mode_scale_factor"
+            const val POPUP_ENABLED =                       "keyboard__popup_enabled"
+            const val SOUND_ENABLED =                       "keyboard__sound_enabled"
+            const val SOUND_VOLUME =                        "keyboard__sound_volume"
+            const val SPACE_BAR_SWITCHES_TO_CHARACTERS =    "keyboard__space_bar_switches_to_characters"
+            const val UTILITY_KEY_ACTION =                  "keyboard__utility_key_action"
+            const val UTILITY_KEY_ENABLED =                 "keyboard__utility_key_enabled"
+            const val VIBRATION_ENABLED =                   "keyboard__vibration_enabled"
+            const val VIBRATION_STRENGTH =                  "keyboard__vibration_strength"
         }
 
         var bottomOffsetPortrait: Int = 0
@@ -371,8 +375,11 @@ class PrefHelper(
             get() =  prefHelper.getPref(NUMBER_ROW, false)
             set(v) = prefHelper.setPref(NUMBER_ROW, v)
         var oneHandedMode: String
-            get() = prefHelper.getPref(ONE_HANDED_MODE, "off")
+            get() = prefHelper.getPref(ONE_HANDED_MODE, OneHandedMode.OFF)
             set(value) = prefHelper.setPref(ONE_HANDED_MODE, value)
+        var oneHandedModeScaleFactor: Int
+            get() =  prefHelper.getPref(ONE_HANDED_MODE_SCALE_FACTOR, 87)
+            set(v) = prefHelper.setPref(ONE_HANDED_MODE_SCALE_FACTOR, v)
         var popupEnabled: Boolean = false
             get() = prefHelper.getPref(POPUP_ENABLED, true)
             private set
@@ -383,6 +390,9 @@ class PrefHelper(
         var soundVolume: Int = 0
             get() = prefHelper.getPref(SOUND_VOLUME, -1)
             private set
+        var spaceBarSwitchesToCharacters: Boolean
+            get() =  prefHelper.getPref(SPACE_BAR_SWITCHES_TO_CHARACTERS, true)
+            set(v) = prefHelper.setPref(SPACE_BAR_SWITCHES_TO_CHARACTERS, v)
         var utilityKeyAction: UtilityKeyAction
             get() =  UtilityKeyAction.fromString(prefHelper.getPref(UTILITY_KEY_ACTION, UtilityKeyAction.DYNAMIC_SWITCH_LANGUAGE_EMOJIS.toString()))
             set(v) = prefHelper.setPref(UTILITY_KEY_ACTION, v)
@@ -488,5 +498,53 @@ class PrefHelper(
         var sunsetTime: Int
             get() =  prefHelper.getPref(SUNSET_TIME, TimeUtil.encode(18, 0))
             set(v) = prefHelper.setPref(SUNSET_TIME, v)
+    }
+
+    /**
+     * Wrapper class for clipboard preferences
+     */
+    class Clipboard(private val prefHelper: PrefHelper) {
+        companion object {
+            const val ENABLE_INTERNAL    = "clipboard__enable_internal"
+            const val SYNC_TO_SYSTEM     = "clipboard__sync_to_system"
+            const val SYNC_TO_FLORIS     = "clipboard__sync_to_floris"
+            const val ENABLE_HISTORY     = "clipboard__enable_history"
+            const val CLEAN_UP_OLD       = "clipboard__clean_up_old"
+            const val LIMIT_HISTORY_SIZE = "clipboard__limit_history_size"
+            const val CLEAN_UP_AFTER     = "clipboard__clean_up_after"
+            const val MAX_HISTORY_SIZE   = "clipboard__max_history_size"
+        }
+
+        var enableInternal: Boolean
+            get() =  prefHelper.getPref(ENABLE_INTERNAL, false)
+            set(v) = prefHelper.setPref(ENABLE_INTERNAL, v)
+
+        var syncToSystem: Boolean
+            get() =  prefHelper.getPref(SYNC_TO_SYSTEM, false)
+            set(v) = prefHelper.setPref(SYNC_TO_SYSTEM, v)
+
+        var syncToFloris: Boolean
+            get() =  prefHelper.getPref(SYNC_TO_FLORIS, true)
+            set(v) = prefHelper.setPref(SYNC_TO_FLORIS, v)
+
+        var enableHistory: Boolean
+            get() =  prefHelper.getPref(ENABLE_HISTORY, false)
+            set(v) = prefHelper.setPref(ENABLE_HISTORY, v)
+
+        var cleanUpOld: Boolean
+            get() =  prefHelper.getPref(CLEAN_UP_OLD, false)
+            set(v) = prefHelper.setPref(CLEAN_UP_OLD, v)
+
+        var limitHistorySize: Boolean
+            get() =  prefHelper.getPref(LIMIT_HISTORY_SIZE, true)
+            set(v) = prefHelper.setPref(LIMIT_HISTORY_SIZE, v)
+
+        var cleanUpAfter: Int
+            get() =  prefHelper.getPref(CLEAN_UP_AFTER, 20)
+            set(v) = prefHelper.setPref(CLEAN_UP_AFTER, v)
+
+        var maxHistorySize: Int
+            get() =  prefHelper.getPref(MAX_HISTORY_SIZE, 20)
+            set(v) = prefHelper.setPref(MAX_HISTORY_SIZE, v)
     }
 }

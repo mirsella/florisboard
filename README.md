@@ -1,14 +1,15 @@
 <img align="left" width="80" height="80"
 src="fastlane/metadata/android/en-US/images/icon.png" alt="App icon">
 
-# FlorisBoard [![Release](https://img.shields.io/github/v/release/florisboard/florisboard)](https://github.com/florisboard/florisboard/releases) [![Crowdin](https://badges.crowdin.net/florisboard/localized.svg)](https://crowdin.florisboard.patrickgold.dev) ![FlorisBoard CI](https://github.com/florisboard/florisboard/workflows/FlorisBoard%20CI/badge.svg?event=push)
+# FlorisBoard [![Crowdin](https://badges.crowdin.net/florisboard/localized.svg)](https://crowdin.florisboard.patrickgold.dev) ![FlorisBoard CI](https://github.com/florisboard/florisboard/workflows/FlorisBoard%20CI/badge.svg?event=push)
 
 **FlorisBoard** is a free and open-source keyboard for Android 6.0+
 devices. It aims at being modern, user-friendly and customizable while
-fully respecting your privacy. Currently in alpha/early-beta state.
+fully respecting your privacy. Currently in early-beta state.
 
-## Public Alpha Test Programme
-Wanna try it out on your device? Use one of the following options:
+### Stable [![Latest stable release](https://img.shields.io/github/v/release/florisboard/florisboard)](https://github.com/florisboard/florisboard/releases/latest)
+
+Releases on this track are in general stable and ready for everyday use, except for features marked as experimental. Use one of the following options to receive FlorisBoard's stable releases:
 
 _A. Get it on F-Droid_:
 
@@ -36,6 +37,16 @@ for and download FlorisBoard without prior joining the alpha group.
 
 _C. Use the APK provided in the release section of this repo_
 
+### Beta [![Latest beta release](https://img.shields.io/github/v/release/florisboard/florisboard?include_prereleases)](https://github.com/florisboard/florisboard/releases)
+
+Releases on this track are also in general stable and should be ready for everyday use, though crashes and bugs are more likely to occur. Use releases from this track if you want to get new features faster and give feedback for brand-new stuff. Options to get beta releases:
+
+_A. IzzySoft's repo for F-Droid_:
+
+[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" height="64" alt="IzzySoft repo badge">](https://apt.izzysoft.de/fdroid/index/apk/dev.patrickgold.florisboard.beta)
+
+_B. Use the APK provided in the release section of this repo_
+
 ### Giving feedback
 If you want to give feedback to FlorisBoard, there are several ways to
 do so, as listed [here](CONTRIBUTING.md#giving-general-feedback).
@@ -62,11 +73,9 @@ milestones, please refer to the [Feature roadmap](#feature-roadmap).
 * [x] Landscape orientation support (needs tweaks)
 
 ### Layouts
-* [x] Latin character layouts (QWERTY, QWERTZ, AZERTY, Swiss, Spanish,
-      Norwegian, Swedish/Finnish, Icelandic, Danish, Hungarian,
-      Croatian, Polish, Romanian, Colemak, Dvorak); more coming in future versions
-* [x] Non-latin character layouts (Arabic, Persian, Greek, Russian
-      (JCUKEN))
+* [x] Latin character layouts (QWERTY, QWERTZ, AZERTY, Swiss, Spanish, Norwegian, Swedish/Finnish, Icelandic, Danish,
+      Hungarian, Croatian, Polish, Romanian, Colemak, Dvorak, ...)
+* [x] Non-latin character layouts (Arabic, Persian, Greek, Russian (JCUKEN))
 * [x] Adapt to situation in app (password, url, text, etc. )
 * [x] Special character layout(s)
 * [x] Numeric layout
@@ -88,6 +97,7 @@ milestones, please refer to the [Feature roadmap](#feature-roadmap).
 ### Other useful features
 * [x] One-handed mode
 * [x] Clipboard/cursor tools
+* [x] Clipboard manager/history
 * [x] Integrated number row / symbols in character layouts
 * [x] Gesture support
 * [x] Full integration in IME service list of Android (xml/method)
@@ -138,6 +148,7 @@ close as possible.
     and `Follow time`)
   - Define a separate theme both for day and night theme
   - Adapt to app theme if possible
+  - Theme import/export
 
 ### [v0.5.0](https://github.com/florisboard/florisboard/milestone/5)
 There's no exact roadmap yet but it is planned that the media part of
@@ -150,7 +161,6 @@ passes...
 
 Backlog (currently not assigned to any milestone):
 
-- Theme import/export
 - Floating keyboard
 
 [#91]: https://github.com/florisboard/florisboard/pull/91
@@ -179,8 +189,6 @@ to get more information on this topic.
   [Jared Rummler](https://github.com/jaredrummler)
 * [Timber](https://github.com/JakeWharton/timber) by
   [JakeWharton](https://github.com/JakeWharton)
-* [kotlin-result](https://github.com/michaelbull/kotlin-result) by
-  [Michael Bull](https://github.com/michaelbull)
 * [expandable-fab](https://github.com/nambicompany/expandable-fab) by
   [Nambi](https://github.com/nambicompany)
 

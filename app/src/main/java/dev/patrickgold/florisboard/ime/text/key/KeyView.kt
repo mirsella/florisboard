@@ -194,7 +194,8 @@ class KeyView(
      */
     fun getComputedLetter(
         keyData: KeyData = data,
-        caps: Boolean = florisboard?.textInputManager?.caps ?: false,
+        caps: Boolean = florisboard?.textInputManager?.caps ?: false &&
+            florisboard?.textInputManager?.getActiveKeyboardMode() == KeyboardMode.CHARACTERS,
         subtype: Subtype = florisboard?.activeSubtype ?: Subtype.DEFAULT
     ): String {
         return if (caps && keyData is FlorisKeyData && keyData.shift != null) {
@@ -204,8 +205,9 @@ class KeyView(
                 KeyCode.URI_COMPONENT_TLD -> keyData.label.toLowerCase(Locale.ENGLISH)
                 else -> {
                     val labelText = (keyData.code.toChar()).toString()
+                    val locale = if (subtype.locale.language == "el") { Locale.getDefault() } else { subtype.locale }
                     if (caps) {
-                        labelText.toUpperCase(subtype.locale)
+                        labelText.toUpperCase(locale)
                     } else {
                         labelText
                     }
@@ -473,7 +475,6 @@ class KeyView(
      *  by Devunwired
      */
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-
         val keyMarginH: Int
         val keyMarginV: Int
 
@@ -556,7 +557,7 @@ class KeyView(
         }
 
         drawablePaddingH = (0.2f * width).toInt()
-        drawablePaddingV = (0.2f * height).toInt()
+        drawablePaddingV = (0.2f * height * (1.0f / (florisboard?.inputView?.heightFactor ?: 1.0f)).coerceAtMost(1.0f)).toInt()
 
         // MUST CALL THIS
         setMeasuredDimension(width, height)
@@ -579,14 +580,27 @@ class KeyView(
         isEnabled = when (data.code) {
             KeyCode.CLIPBOARD_COPY,
             KeyCode.CLIPBOARD_CUT -> (florisboard != null
-                && florisboard.activeEditorInstance.selection.isSelectionMode
-                && !florisboard.activeEditorInstance.isRawInputEditor)
-            KeyCode.CLIPBOARD_PASTE -> florisboard?.clipboardManager?.hasPrimaryClip() == true
+                    && florisboard.activeEditorInstance.selection.isSelectionMode
+                    && !florisboard.activeEditorInstance.isRawInputEditor)
+            KeyCode.CLIPBOARD_PASTE -> (
+                // such gore. checks
+                // 1. has a clipboard item
+                // 2. the clipboard item has any of the supported mime types of the editor OR is plain text.
+                florisboard?.florisClipboardManager?.canBePasted(florisboard.florisClipboardManager?.primaryClip)
+            ) == true
             KeyCode.CLIPBOARD_SELECT_ALL -> {
                 florisboard?.activeEditorInstance?.isRawInputEditor == false
             }
+            KeyCode.SWITCH_TO_CLIPBOARD_CONTEXT -> {
+                visibility = when (prefs.clipboard.enableHistory ) {
+                    true -> VISIBLE
+                    false -> GONE
+                }
+                prefs.clipboard.enableHistory
+            }
             else -> true
         }
+        if (data.code == KeyCode.CLIPBOARD_PASTE)
         if (!isEnabled) {
             isKeyPressed = false
         }
@@ -717,6 +731,12 @@ class KeyView(
                         } else {
                             VISIBLE
                         }
+                }
+            }
+            KeyCode.SWITCH_TO_CLIPBOARD_CONTEXT -> {
+                when (prefs.clipboard.enableHistory) {
+                    true -> VISIBLE
+                    false -> GONE
                 }
             }
             KeyCode.LANGUAGE_SWITCH -> {
@@ -865,6 +885,9 @@ class KeyView(
                 }
                 KeyCode.SWITCH_TO_MEDIA_CONTEXT -> {
                     drawable = getDrawable(context, R.drawable.ic_sentiment_satisfied)
+                }
+                KeyCode.SWITCH_TO_CLIPBOARD_CONTEXT -> {
+                    drawable = getDrawable(context, R.drawable.ic_assignment)
                 }
                 KeyCode.SWITCH_TO_TEXT_CONTEXT,
                 KeyCode.VIEW_CHARACTERS -> {

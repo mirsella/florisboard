@@ -17,10 +17,8 @@
 package dev.patrickgold.florisboard.ime.core
 
 import android.annotation.SuppressLint
-import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.graphics.Color
 import android.inputmethodservice.ExtractEditText
@@ -32,7 +30,6 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.provider.Settings
 import android.view.*
-import android.view.inputmethod.CursorAnchorInfo
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
@@ -44,8 +41,11 @@ import androidx.lifecycle.*
 import com.squareup.moshi.Json
 import dev.patrickgold.florisboard.BuildConfig
 import dev.patrickgold.florisboard.R
+import dev.patrickgold.florisboard.ime.clip.ClipboardInputManager
+import dev.patrickgold.florisboard.ime.clip.FlorisClipboardManager
 import dev.patrickgold.florisboard.ime.landscapeinput.LandscapeInputUiMode
 import dev.patrickgold.florisboard.ime.media.MediaInputManager
+import dev.patrickgold.florisboard.ime.onehanded.OneHandedMode
 import dev.patrickgold.florisboard.ime.popup.PopupLayerView
 import dev.patrickgold.florisboard.ime.text.TextInputManager
 import dev.patrickgold.florisboard.ime.text.gestures.SwipeAction
@@ -59,6 +59,9 @@ import dev.patrickgold.florisboard.util.*
 import timber.log.Timber
 import java.lang.ref.WeakReference
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 /**
  * Variable which holds the current [FlorisBoard] instance. To get this instance from another
@@ -70,7 +73,7 @@ private var florisboardInstance: FlorisBoard? = null
  * Core class responsible to link together both the text and media input managers as well as
  * managing the one-handed UI.
  */
-class FlorisBoard : InputMethodService(), LifecycleOwner, ClipboardManager.OnPrimaryClipChangedListener,
+class FlorisBoard : InputMethodService(), LifecycleOwner, FlorisClipboardManager.OnPrimaryClipChangedListener,
     ThemeManager.OnThemeUpdatedListener {
 
     lateinit var prefs: PrefHelper
@@ -90,7 +93,7 @@ class FlorisBoard : InputMethodService(), LifecycleOwner, ClipboardManager.OnPri
 
     private var audioManager: AudioManager? = null
     var imeManager:InputMethodManager? = null
-    var clipboardManager: ClipboardManager? = null
+    var florisClipboardManager: FlorisClipboardManager? = null
     private val themeManager: ThemeManager = ThemeManager.default()
     private var vibrator: Vibrator? = null
     private val osHandler = Handler()
@@ -117,16 +120,23 @@ class FlorisBoard : InputMethodService(), LifecycleOwner, ClipboardManager.OnPri
 
     val textInputManager: TextInputManager
     val mediaInputManager: MediaInputManager
+    val clipInputManager: ClipboardInputManager
+
+    var isClipboardContextMenuShown = false
 
     init {
         florisboardInstance = this
 
         textInputManager = TextInputManager.getInstance()
         mediaInputManager = MediaInputManager.getInstance()
+        clipInputManager = ClipboardInputManager.getInstance()
     }
+
+    lateinit var asyncExecutor: ExecutorService
 
     companion object {
         private const val IME_ID: String = "dev.patrickgold.florisboard/.ime.core.FlorisBoard"
+        private const val IME_ID_BETA: String = "dev.patrickgold.florisboard.beta/dev.patrickgold.florisboard.ime.core.FlorisBoard"
         private const val IME_ID_DEBUG: String = "dev.patrickgold.florisboard.debug/dev.patrickgold.florisboard.ime.core.FlorisBoard"
 
         fun checkIfImeIsEnabled(context: Context): Boolean {
@@ -138,6 +148,9 @@ class FlorisBoard : InputMethodService(), LifecycleOwner, ClipboardManager.OnPri
             return when {
                 BuildConfig.DEBUG -> {
                     activeImeIds.split(":").contains(IME_ID_DEBUG)
+                }
+                context.packageName.endsWith(".beta") -> {
+                    activeImeIds.split(":").contains(IME_ID_BETA)
                 }
                 else -> {
                     activeImeIds.split(":").contains(IME_ID)
@@ -154,6 +167,9 @@ class FlorisBoard : InputMethodService(), LifecycleOwner, ClipboardManager.OnPri
             return when {
                 BuildConfig.DEBUG -> {
                     selectedImeId == IME_ID_DEBUG
+                }
+                context.packageName.endsWith(".beta") -> {
+                    selectedImeId.split(":").contains(IME_ID_BETA)
                 }
                 else -> {
                     selectedImeId == IME_ID
@@ -203,13 +219,10 @@ class FlorisBoard : InputMethodService(), LifecycleOwner, ClipboardManager.OnPri
             )
         }*/
         Timber.i("onCreate()")
-
         serviceLifecycleDispatcher.onServicePreSuperOnCreate()
 
         imeManager = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
         audioManager = getSystemService(Context.AUDIO_SERVICE) as? AudioManager
-        clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
-        clipboardManager?.addPrimaryClipChangedListener(this)
         vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
         prefs = PrefHelper.getDefaultInstance(this)
         prefs.initDefaultPreferences()
@@ -224,6 +237,11 @@ class FlorisBoard : InputMethodService(), LifecycleOwner, ClipboardManager.OnPri
         themeManager.registerOnThemeUpdatedListener(this)
 
         AppVersionUtils.updateVersionOnInstallAndLastUse(this, prefs)
+
+        asyncExecutor = Executors.newSingleThreadExecutor()
+        florisClipboardManager = FlorisClipboardManager.getInstance()
+        florisClipboardManager!!.initialize(context)
+        florisClipboardManager?.addPrimaryClipChangedListener(this)
 
         super.onCreate()
         eventListeners.toList().forEach { it?.onCreate() }
@@ -276,7 +294,8 @@ class FlorisBoard : InputMethodService(), LifecycleOwner, ClipboardManager.OnPri
         Timber.i("onDestroy()")
 
         themeManager.unregisterOnThemeUpdatedListener(this)
-        clipboardManager?.removePrimaryClipChangedListener(this)
+        florisClipboardManager!!.removePrimaryClipChangedListener(this)
+        florisClipboardManager!!.close()
         osHandler.removeCallbacksAndMessages(null)
         florisboardInstance = null
 
@@ -324,7 +343,6 @@ class FlorisBoard : InputMethodService(), LifecycleOwner, ClipboardManager.OnPri
             }
         }
         this.inputView = inputView
-        initializeOneHandedEnvironment()
         updateSoftInputWindowLayoutParameters()
         updateOneHandedPanelVisibility()
         themeManager.notifyCallbackReceivers()
@@ -335,7 +353,6 @@ class FlorisBoard : InputMethodService(), LifecycleOwner, ClipboardManager.OnPri
 
     override fun onStartInput(attribute: EditorInfo?, restarting: Boolean) {
         Timber.i("onStartInput($attribute, $restarting)")
-
         super.onStartInput(attribute, restarting)
         currentInputConnection?.requestCursorUpdates(InputConnection.CURSOR_UPDATE_MONITOR)
     }
@@ -526,14 +543,6 @@ class FlorisBoard : InputMethodService(), LifecycleOwner, ClipboardManager.OnPri
 
         // Update InputView theme
         inputView?.setBackgroundColor(theme.getAttr(Theme.Attr.KEYBOARD_BACKGROUND).toSolidColor().color)
-        inputView?.oneHandedCtrlPanelStart?.setBackgroundColor(theme.getAttr(Theme.Attr.ONE_HANDED_BACKGROUND).toSolidColor().color)
-        inputView?.oneHandedCtrlPanelEnd?.setBackgroundColor(theme.getAttr(Theme.Attr.ONE_HANDED_BACKGROUND).toSolidColor().color)
-        ColorStateList.valueOf(theme.getAttr(Theme.Attr.ONE_HANDED_FOREGROUND).toSolidColor().color).also {
-            inputView?.oneHandedCtrlMoveStart?.imageTintList = it
-            inputView?.oneHandedCtrlMoveEnd?.imageTintList = it
-            inputView?.oneHandedCtrlCloseStart?.imageTintList = it
-            inputView?.oneHandedCtrlCloseEnd?.imageTintList = it
-        }
         inputView?.invalidate()
 
         // Update ExtractTextView theme and attributes
@@ -571,6 +580,7 @@ class FlorisBoard : InputMethodService(), LifecycleOwner, ClipboardManager.OnPri
         val inputView = this.inputView ?: return
         val inputWindowView = this.inputWindowView ?: return
         // TODO: Check also if the keyboard is currently suppressed by a hardware keyboard
+
         if (!isInputViewShown) {
             outInsets?.contentTopInsets = inputWindowView.height
             outInsets?.visibleTopInsets = inputWindowView.height
@@ -579,6 +589,11 @@ class FlorisBoard : InputMethodService(), LifecycleOwner, ClipboardManager.OnPri
         val visibleTopY = inputWindowView.height - inputView.measuredHeight
         outInsets?.contentTopInsets = visibleTopY
         outInsets?.visibleTopInsets = visibleTopY
+
+        if (isClipboardContextMenuShown) {
+            outInsets?.touchableInsets = Insets.TOUCHABLE_INSETS_FRAME
+            outInsets?.touchableRegion?.setEmpty()
+        }
     }
 
     /**
@@ -728,6 +743,7 @@ class FlorisBoard : InputMethodService(), LifecycleOwner, ClipboardManager.OnPri
     private fun onSubtypeChanged(newSubtype: Subtype) {
         textInputManager.onSubtypeChanged(newSubtype)
         mediaInputManager.onSubtypeChanged(newSubtype)
+        clipInputManager.onSubtypeChanged(newSubtype)
     }
 
     fun setActiveInput(type: Int) {
@@ -738,61 +754,35 @@ class FlorisBoard : InputMethodService(), LifecycleOwner, ClipboardManager.OnPri
             R.id.media_input -> {
                 inputView?.mainViewFlipper?.displayedChild = 1
             }
-        }
-    }
-
-    private fun initializeOneHandedEnvironment() {
-        { v:View -> onOneHandedPanelButtonClick(v) }.also {
-            inputView?.oneHandedCtrlMoveStart?.setOnClickListener(it)
-            inputView?.oneHandedCtrlMoveEnd?.setOnClickListener(it)
-            inputView?.oneHandedCtrlCloseStart?.setOnClickListener(it)
-            inputView?.oneHandedCtrlCloseEnd?.setOnClickListener(it)
-        }
-    }
-
-    private fun onOneHandedPanelButtonClick(v: View) {
-        when (v.id) {
-            R.id.one_handed_ctrl_move_start -> {
-                prefs.keyboard.oneHandedMode = "start"
-            }
-            R.id.one_handed_ctrl_move_end -> {
-                prefs.keyboard.oneHandedMode = "end"
-            }
-            R.id.one_handed_ctrl_close_start,
-            R.id.one_handed_ctrl_close_end -> {
-                prefs.keyboard.oneHandedMode = "off"
+            R.id.clip_input -> {
+                inputView?.mainViewFlipper?.displayedChild = 2
             }
         }
-        updateOneHandedPanelVisibility()
     }
 
     fun toggleOneHandedMode(isRight: Boolean) {
-        when (prefs.keyboard.oneHandedMode) {
-            "off" -> {
-                prefs.keyboard.oneHandedMode = if (isRight) { "end" } else { "start" }
-            }
-            else -> {
-                prefs.keyboard.oneHandedMode = "off"
-            }
+        prefs.keyboard.oneHandedMode = when (prefs.keyboard.oneHandedMode) {
+            OneHandedMode.OFF -> if (isRight) { OneHandedMode.END } else { OneHandedMode.START }
+            else -> OneHandedMode.OFF
         }
         updateOneHandedPanelVisibility()
     }
 
-    private fun updateOneHandedPanelVisibility() {
+    fun updateOneHandedPanelVisibility() {
         if (resources.configuration.orientation != Configuration.ORIENTATION_PORTRAIT) {
             inputView?.oneHandedCtrlPanelStart?.visibility = View.GONE
             inputView?.oneHandedCtrlPanelEnd?.visibility = View.GONE
         } else {
             when (prefs.keyboard.oneHandedMode) {
-                "off" -> {
+                OneHandedMode.OFF -> {
                     inputView?.oneHandedCtrlPanelStart?.visibility = View.GONE
                     inputView?.oneHandedCtrlPanelEnd?.visibility = View.GONE
                 }
-                "start" -> {
+                OneHandedMode.START -> {
                     inputView?.oneHandedCtrlPanelStart?.visibility = View.GONE
                     inputView?.oneHandedCtrlPanelEnd?.visibility = View.VISIBLE
                 }
-                "end" -> {
+                OneHandedMode.END -> {
                     inputView?.oneHandedCtrlPanelStart?.visibility = View.VISIBLE
                     inputView?.oneHandedCtrlPanelEnd?.visibility = View.GONE
                 }

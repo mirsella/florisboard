@@ -99,6 +99,8 @@
     <string name="settings__theme_manager__create_from_selected" comment="Label of the Create from selected FAB action">Create from selected theme</string>
     <string name="settings__theme_manager__theme_custom_title" comment="Title template for a custom theme">Custom (based on %s)</string>
     <string name="settings__theme_manager__theme_new_title" comment="Title template for a new theme">New theme</string>
+    <string name="settings__theme_manager__theme_import_success" comment="Message for theme import success">Theme imported successfully!</string>
+    <string name="settings__theme_manager__theme_export_success" comment="Message for theme export success">Theme exported successfully!</string>
 
     <string name="settings__theme_editor__title" comment="Title of the edit theme activity">Edit theme</string>
     <string name="settings__theme_editor__name_label" comment="Label of name input">Name</string>
@@ -107,6 +109,7 @@
     <string name="settings__theme_editor__edit_group_dialog_title" comment="Title of the edit group dialog in the theme editor">Edit group</string>
     <string name="settings__theme_editor__add_attr_dialog_title" comment="Title of the add attribute dialog in the theme editor">Add attribute</string>
     <string name="settings__theme_editor__edit_attr_dialog_title" comment="Title of the edit attribute dialog in the theme editor">Edit attribute</string>
+    <string name="settings__theme_editor__edit_theme_name_dialog_title" comment="Title of the edit theme name dialog in the theme editor">Edit theme name</string>
     <string name="settings__theme_editor__value_type_reference" comment="Theme value type">Reference</string>
     <string name="settings__theme_editor__value_type_reference_group" comment="Theme value type sub-field">Group</string>
     <string name="settings__theme_editor__value_type_reference_attr" comment="Theme value type sub-field">Attribute</string>
@@ -176,10 +179,11 @@
     <string name="pref__keyboard__font_size_multiplier_portrait__label" comment="Preference title">Font size multiplier (portrait)</string>
     <string name="pref__keyboard__font_size_multiplier_landscape__label" comment="Preference title">Font size multiplier (landscape)</string>
     <string name="pref__keyboard__group_layout__label" comment="Preference group title">Layout</string>
-    <string name="pref__keyboard__one_handed_mode__label" comment="Preference value">One-handed mode</string>
+    <string name="pref__keyboard__one_handed_mode__label" comment="Preference title">One-handed mode</string>
     <string name="pref__keyboard__one_handed_mode__off" comment="Preference value">Off</string>
     <string name="pref__keyboard__one_handed_mode__right" comment="Preference value">Right-handed mode</string>
     <string name="pref__keyboard__one_handed_mode__left" comment="Preference value">Left-handed mode</string>
+    <string name="pref__keyboard__one_handed_mode_scale_factor__label" comment="Preference title">One-handed mode keyboard width</string>
     <string name="pref__keyboard__landscape_input_ui_mode__label" comment="Preference value">Landscape fullscreen input</string>
     <string name="pref__keyboard__landscape_input_ui_mode__never_show" comment="Preference value">Never show</string>
     <string name="pref__keyboard__landscape_input_ui_mode__always_show" comment="Preference value">Always show</string>
@@ -206,6 +210,8 @@
     <string name="pref__keyboard__popup_visible__label" comment="Preference title">PopUp Visibility</string>
     <string name="pref__keyboard__popup_visible__summary" comment="Preference summary">Show popup when you press a key</string>
     <string name="pref__keyboard__long_press_delay__label" comment="Preference title">Long key press delay</string>
+    <string name="pref__keyboard__space_bar_switches_to_characters__label" comment="Preference title">Space bar switches back to character layout</string>
+    <string name="pref__keyboard__space_bar_switches_to_characters__summary" comment="Preference summary">Pressing space bar automatically switches back to characters when in symbols or numeric</string>
 
     <string name="settings__typing__title" comment="Title of Typing experience fragment">Typing experience</string>
     <string name="pref__smartbar__enabled__label" comment="Preference title">Enable Smartbar</string>
@@ -314,7 +320,9 @@
     <string name="assets__action__no">No</string>
     <string name="assets__action__save">Save</string>
     <string name="assets__action__yes">Yes</string>
+    <string name="assets__error__details">Details</string>
     <string name="assets__error__invalid">Invalid</string>
+    <string name="assets__error__snackbar_message">Something went wrong</string>
 
     <!-- Setup UI strings -->
     <string name="setup__title" comment="Title of Setup">Setup</string>
@@ -354,4 +362,15 @@
     <string name="crash_once_notification__body" comment="Body of the notification for a single crash">Tap to view error details</string>
     <string name="crash_multiple_notification__title" comment="Title of the notification for consecutive crashes">FlorisBoard seems to stop working repeatedly…</string>
     <string name="crash_multiple_notification__body" comment="Body of the notification for consecutive crashes">Falling back to previous keyboard to stop infinite crash loop. Tap to view error details</string>
+
+    <!-- clipboard strings -->
+    <string name="pref__gestures__swipe_action__switch_to_clipboard_context">Switch to clipboard history</string>
+    <string name="clip__context_header">Clipboard history</string>
+    <string name="clip__clear_history">Clear history</string>
+    <string name="clip__unpin_item">Unpin item</string>
+    <string name="clip__pin_item">Pin item</string>
+    <string name="clip__delete_item">Delete</string>
+    <string name="clip__paste_item">Paste</string>
+    <string name="clip__back_to_text_input">Back to text input</string>
+    <string name="clip__cant_paste">This app doesn\'t allow pasting this content.</string>
 </resources>

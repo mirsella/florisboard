@@ -84,6 +84,17 @@
             app:title="@string/pref__keyboard__one_handed_mode__label"
             app:useSimpleSummaryProvider="true"/>
 
+        <dev.patrickgold.florisboard.settings.components.DialogSeekBarPreference
+            app:allowDividerAbove="false"
+            android:defaultValue="87"
+            app:key="keyboard__one_handed_mode_scale_factor"
+            app:min="70"
+            app:max="90"
+            app:iconSpaceReserved="false"
+            app:title="@string/pref__keyboard__one_handed_mode_scale_factor__label"
+            app:seekBarIncrement="1"
+            app:unit="%"/>
+
         <ListPreference
             android:defaultValue="dynamically_show"
             app:entries="@array/pref__keyboard__landscape_input_ui_mode__entries"
@@ -220,6 +231,87 @@
             app:title="@string/pref__keyboard__long_press_delay__label"
             app:seekBarIncrement="10"
             app:unit=" ms"/>
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            app:key="keyboard__space_bar_switches_to_characters"
+            app:iconSpaceReserved="false"
+            app:title="@string/pref__keyboard__space_bar_switches_to_characters__label"
+            app:summary="@string/pref__keyboard__space_bar_switches_to_characters__summary"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        app:iconSpaceReserved="false"
+        android:title="Clipboard">
+
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            app:key="clipboard__enable_internal"
+            app:iconSpaceReserved="false"
+            app:title="Use internal clipboard"
+            app:summary="Use an internal clipboard instead of the system clipboard"/>
+
+        <SwitchPreferenceCompat
+            android:dependency="clipboard__enable_internal"
+            android:defaultValue="true"
+            app:key="clipboard__sync_to_floris"
+            app:iconSpaceReserved="false"
+            app:title="Sync from system clipboard"
+            app:summary="System clipboard updates also update Floris clipboard"/>
+
+        <SwitchPreferenceCompat
+            android:dependency="clipboard__enable_internal"
+            android:defaultValue="false"
+            app:key="clipboard__sync_to_system"
+            app:iconSpaceReserved="false"
+            app:title="Sync to system clipboard"
+            app:summary="Floris clipboard updates also update system clipboard"/>
+
+        <SwitchPreferenceCompat
+            android:defaultValue="false"
+            app:key="clipboard__enable_history"
+            app:iconSpaceReserved="false"
+            app:title="Enable clipboard history"
+            app:summary="Retain clipboard items"/>
+
+        <SwitchPreferenceCompat
+            android:dependency="clipboard__enable_history"
+            android:defaultValue="true"
+            app:key="clipboard__clean_up_old"
+            app:iconSpaceReserved="false"
+            app:title="Clean up old items" />
+
+        <dev.patrickgold.florisboard.settings.components.DialogSeekBarPreference
+            app:allowDividerAbove="false"
+            android:dependency="clipboard__clean_up_old"
+            android:defaultValue="15"
+            app:key="clipboard__clean_up_after"
+            app:min="0"
+            app:max="120"
+            app:iconSpaceReserved="false"
+            app:title="Clean up old items after"
+            app:seekBarIncrement="5"
+            app:unit=" minutes"/>
+
+        <SwitchPreferenceCompat
+            android:dependency="clipboard__enable_history"
+            android:defaultValue="true"
+            app:key="clipboard__limit_history_size"
+            app:iconSpaceReserved="false"
+            app:title="Limit history size" />
+
+        <dev.patrickgold.florisboard.settings.components.DialogSeekBarPreference
+            app:allowDividerAbove="false"
+            android:dependency="clipboard__limit_history_size"
+            android:defaultValue="25"
+            app:key="clipboard__max_history_size"
+            app:min="5"
+            app:max="100"
+            app:iconSpaceReserved="false"
+            app:title="Max history size"
+            app:seekBarIncrement="5"
+            app:unit=" items"/>
 
     </PreferenceCategory>
 

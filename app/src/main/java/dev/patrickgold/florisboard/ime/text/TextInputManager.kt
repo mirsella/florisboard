@@ -22,7 +22,6 @@ import android.view.KeyEvent
 import android.widget.LinearLayout
 import android.widget.Toast
 import android.widget.ViewFlipper
-import com.github.michaelbull.result.getOr
 import dev.patrickgold.florisboard.BuildConfig
 import dev.patrickgold.florisboard.R
 import dev.patrickgold.florisboard.ime.core.*
@@ -321,7 +320,7 @@ class TextInputManager private constructor() : CoroutineScope by MainScope(), In
             if (activeEditorInstance.isComposingEnabled) {
                 withContext(Dispatchers.IO) {
                     dictionaryManager.loadDictionary(AssetRef(AssetSource.Assets,"ime/dict/en.flict")).let {
-                        activeDictionary = it.getOr(null)
+                        activeDictionary = it.getOrDefault(null)
                     }
                 }
             }
@@ -404,6 +403,7 @@ class TextInputManager private constructor() : CoroutineScope by MainScope(), In
             SwipeAction.MOVE_CURSOR_START_OF_PAGE -> KeyData.MOVE_START_OF_PAGE
             SwipeAction.MOVE_CURSOR_END_OF_PAGE -> KeyData.MOVE_END_OF_PAGE
             SwipeAction.SHIFT -> KeyData.SHIFT
+            SwipeAction.SWITCH_TO_CLIPBOARD_CONTEXT -> KeyData.SWITCH_TO_CLIPBOARD_CONTEXT
             SwipeAction.SHOW_INPUT_METHOD_PICKER -> KeyData.SHOW_INPUT_METHOD_PICKER
             else -> null
         }
@@ -557,6 +557,9 @@ class TextInputManager private constructor() : CoroutineScope by MainScope(), In
      * enabled by the user.
      */
     private fun handleSpace(ev: InputKeyEvent) {
+        if (florisboard.prefs.keyboard.spaceBarSwitchesToCharacters && getActiveKeyboardMode() != KeyboardMode.CHARACTERS) {
+            setActiveKeyboardMode(KeyboardMode.CHARACTERS)
+        }
         if (florisboard.prefs.correction.doubleSpacePeriod) {
             if (ev.isConsecutiveEventOf(inputEventDispatcher.lastKeyEventUp, florisboard.prefs.keyboard.longPressDelay.toLong())) {
                 val text = activeEditorInstance.getTextBeforeCursor(2)
@@ -720,8 +723,11 @@ class TextInputManager private constructor() : CoroutineScope by MainScope(), In
             KeyCode.SHIFT -> handleShiftUp()
             KeyCode.SHIFT_LOCK -> handleShiftLock()
             KeyCode.SHOW_INPUT_METHOD_PICKER -> florisboard.imeManager?.showInputMethodPicker()
+            KeyCode.SPACE -> handleSpace(ev)
             KeyCode.SWITCH_TO_MEDIA_CONTEXT -> florisboard.setActiveInput(R.id.media_input)
+            KeyCode.SWITCH_TO_CLIPBOARD_CONTEXT -> florisboard.setActiveInput(R.id.clip_input)
             KeyCode.SWITCH_TO_TEXT_CONTEXT -> florisboard.setActiveInput(R.id.text_input)
+            KeyCode.CLEAR_CLIPBOARD_HISTORY -> florisboard.florisClipboardManager?.clearHistoryWithAnimation()
             KeyCode.TOGGLE_ONE_HANDED_MODE_LEFT -> florisboard.toggleOneHandedMode(isRight = false)
             KeyCode.TOGGLE_ONE_HANDED_MODE_RIGHT -> florisboard.toggleOneHandedMode(isRight = true)
             KeyCode.VIEW_CHARACTERS -> setActiveKeyboardMode(KeyboardMode.CHARACTERS)
@@ -752,15 +758,15 @@ class TextInputManager private constructor() : CoroutineScope by MainScope(), In
                     }
                     else -> when (data.type) {
                         KeyType.CHARACTER, KeyType.NUMERIC -> when (data.code) {
-                            KeyCode.SPACE -> handleSpace(ev)
                             KeyCode.URI_COMPONENT_TLD -> {
                                 val tld = data.label.toLowerCase(Locale.ENGLISH)
                                 activeEditorInstance.commitText(tld)
                             }
                             else -> {
                                 var text = data.code.toChar().toString()
+                                val locale = if (florisboard.activeSubtype.locale.language == "el") { Locale.getDefault() } else { florisboard.activeSubtype.locale }
                                 text = when (caps && activeKeyboardMode == KeyboardMode.CHARACTERS) {
-                                    true -> text.toUpperCase(florisboard.activeSubtype.locale)
+                                    true -> text.toUpperCase(locale)
                                     false -> text
                                 }
                                 activeEditorInstance.commitText(text)
